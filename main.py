@@ -2,7 +2,6 @@ import random
 import pygame
 from source.system_functions import load_image, terminate, load_level
 
-# import system_functions
 
 FPS = 50
 tile_width, tile_height = 50, 50
@@ -11,6 +10,37 @@ HEIGHT = 603
 MENUBTTNS = [None for _ in range(4)]
 MODEBTTNS = [None for _ in range(3)]
 PLAYRSCOUNT = 0
+
+
+# Включить, когда будет объект игрока с координатами
+#
+# def move_player(player, delta_x, delta_y):
+#     player.x += delta_x
+#     player.y += delta_y
+
+
+# Объект игрока (пока непонятно с классом, поэтому None) и временная константа его скорости
+player_one = None
+VELOCITY = 10
+
+# Подобным образом можно легко задать обработку любого события
+# Но есть небольшой минус - все события по разу вызываются сразу после создания словаря
+KEYBTTNS = {# "w": move_player(player_one, 0, VELOCITY),
+            # "a": move_player(player_one, -VELOCITY, 0),
+            # "s": move_player(player_one, 0, -VELOCITY),
+            # "d": move_player(player_one, VELOCITY, 0),
+            "q": print("Привет!")}
+
+# Пример использования
+#
+# for event in pygame.event.get():
+#     if event.type == pygame.QUIT:
+#         terminate()
+#     elif event.type == pygame.KEYDOWN:
+#         key = event.unicode.lower()
+#         if key in KEYBTTNS:
+#             KEYBTTNS[key]
+
 
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
