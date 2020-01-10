@@ -57,9 +57,10 @@ VELOCITY = 10
 #             "a": move_player(player_one, -VELOCITY, 0),
 #             "s": move_player(player_one, 0, -VELOCITY),
 #             "d": move_player(player_one, VELOCITY, 0)}
-
-PLAYRSKEYS = {"player_one": {119, 97, 115, 100},
-              "player_two": {273, 276, 274, 275}}
+WASDBTTNS = [(pygame.K_w, pygame.K_s, pygame.K_a, pygame.K_d), pygame.K_LSHIFT]
+ARRWBTTNS = [(pygame.K_UP, pygame.K_DOWN, pygame.K_LEFT, pygame.K_RIGHT), pygame.K_SPACE]
+PLAYRSKEYS = {"player_one": WASDBTTNS,
+              "player_two": ARRWBTTNS}
 KEYBTTNS = {119: move_player,
             97: move_player,
             115: move_player,
@@ -118,7 +119,8 @@ def choose_mode(chosed=None, moved=None):
         screen.blit(text, (text_x, text_y))
         pygame.draw.rect(screen, (0, 255, 0), (text_x - 10 - width // 2, text_y - 10 - width // 2,
                                                text_w + 20, text_h + 20), width)
-        MODEBTTNS[i] = ((text_x, text_y, text_w, text_h), cr)
+        MODEBTTNS[i] = ((text_x - 10 - width // 2, text_y - 10,
+                         text_w + 20 - width // 2, text_h + 20), cr)
 
 
 def main_menu(pressed=None, moved=None):
@@ -141,7 +143,8 @@ def main_menu(pressed=None, moved=None):
         screen.blit(text, (text_x, text_y))
         pygame.draw.rect(screen, (0, 255, 0), (text_x - 10 - width // 2, text_y - 10,
                                                text_w + 20 - width // 2, text_h + 20), width)
-        MENUBTTNS[i] = ((text_x, text_y, text_w, text_h), cr)
+        MENUBTTNS[i] = ((text_x - 10 - width // 2, text_y - 10,
+                         text_w + 20 - width // 2, text_h + 20), cr)
 
 
 def what_is_pressed(buttons, pos):
@@ -161,31 +164,31 @@ def start_screen():
                 terminate()
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 x, y = event.pos
-                iteration = what_is_pressed(MENUBTTNS, (x, y))
-                if iteration == 3:
+                btn = what_is_pressed(MENUBTTNS, (x, y))
+                if btn == 3:
                     flag = terminate
-                elif iteration == 2:
+                elif btn == 2:
                     flag = settings_screen
-                elif iteration == 1:
+                elif btn == 1:
                     flag = continue_screen
-                else:
+                elif btn == 0:
                     flag = choose_mode_screen
-                main_menu(iteration)
+                main_menu(btn)
             elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
                 if flag is not None:
                     iter = what_is_pressed(MENUBTTNS, event.pos)
-                    if iter == iteration:
+                    if iter == btn:
                         in_menu = False
                         break
                     else:
                         flag = None
                     main_menu()
             elif event.type == pygame.MOUSEMOTION:
-                btn = what_is_pressed(MENUBTTNS, event.pos)
+                butn = what_is_pressed(MENUBTTNS, event.pos)
                 if 1 in event.buttons:
-                    main_menu(iteration, btn)
+                    main_menu(btn, butn)
                 else:
-                    main_menu(moved=btn)
+                    main_menu(moved=butn)
 
         if not in_menu:
             break
