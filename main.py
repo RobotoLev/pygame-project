@@ -307,9 +307,8 @@ def game():
                 terminate()
             elif event.type == pygame.KEYDOWN:
                 key = event.key
-                print(key)
+                print("Pressed", key)
                 if key in KEYBTTNS:
-                    print("Ура!")
                     KEYBTTNS[key](key)
 
         screen.fill(pygame.Color('black'))
