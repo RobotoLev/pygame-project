@@ -268,11 +268,11 @@ def generate_level(level):
             elif level[y][x] == '#':
                 Tile('wall', (x - 1) // 2, (y - 1) // 2)
             elif level[y][x] == 'G':
-                # Tile('empty', (x - 1) // 2, (y - 1) // 2)
+                Tile('empty', (x - 1) // 2, (y - 1) // 2)
                 player_one = Player((x - 1) // 2, (y - 1) // 2)
                 green_spawn = ((x - 1) // 2, (y - 1) // 2)
             elif level[y][x] == 'R':
-                # Tile('empty', (x - 1) // 2, (y - 1) // 2)
+                Tile('empty', (x - 1) // 2, (y - 1) // 2)
                 player_two = Player((x - 1) // 2, (y - 1) // 2)
                 red_spawn = ((x - 1) // 2, (y - 1) // 2)
             elif level[y][x] == 'E':
