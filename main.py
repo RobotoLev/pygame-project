@@ -263,11 +263,13 @@ class Tile(pygame.sprite.Sprite):
         self.image = tile_images[tile_type]
         self.rect = self.image.get_rect().move(tile_width * pos_x, tile_height * pos_y)
 
+
 class Building(pygame.sprite.Sprite):
     def __init__(self, tile_type, pos_x, pos_y):
         super().__init__(building_group, all_sprites)
         self.image = building_images[tile_type]
         self.rect = self.image.get_rect().move(tile_width * pos_x, tile_height * pos_y)
+
 
 class Boarding(pygame.sprite.Sprite):
     def __init__(self, board_type, pos_x, pos_y):
