@@ -28,7 +28,10 @@ def move_player(key):
     if key in PLAYRSKEYS["player_one"]:
         player = player_one
     else:
-        player = player_two
+        if PLAYRSCOUNT == 2:
+            player = player_two
+        else:
+            return
 
     delta_x = 0
     delta_y = 0
@@ -49,14 +52,6 @@ player_one = None
 player_two = None
 VELOCITY = 10
 
-# Подобным образом можно легко задать обработку любого события
-# Но есть небольшой минус - все события по разу вызываются сразу после создания словаря
-# UPD. Это неправильный способ, нормальный ниже.
-#
-# KEYBTTNS = {"w": move_player(player_one, 0, VELOCITY),
-#             "a": move_player(player_one, -VELOCITY, 0),
-#             "s": move_player(player_one, 0, -VELOCITY),
-#             "d": move_player(player_one, VELOCITY, 0)}
 WASDBTTNS = [(pygame.K_w, pygame.K_s, pygame.K_a, pygame.K_d), pygame.K_LSHIFT]
 ARRWBTTNS = [(pygame.K_UP, pygame.K_DOWN, pygame.K_LEFT, pygame.K_RIGHT), pygame.K_SPACE]
 PLAYRSKEYS = {"player_one": WASDBTTNS,
@@ -69,16 +64,6 @@ KEYBTTNS = {119: move_player,
             276: move_player,
             274: move_player,
             275: move_player}
-
-# Пример использования (в функции game есть нормальнее)
-#
-# for event in pygame.event.get():
-#     if event.type == pygame.QUIT:
-#         terminate()
-#     elif event.type == pygame.KEYDOWN:
-#         key = event.unicode.lower()
-#         if key in KEYBTTNS:
-#             KEYBTTNS[key]
 
 
 pygame.init()
@@ -273,11 +258,12 @@ def generate_level(level):
             elif level[y][x] == 'G':
                 Tile('empty', (x - 1) // 2, (y - 1) // 2)
                 player_one = Player((x - 1) // 2, (y - 1) // 2)
-                #green_spawn = ((x - 1) // 2, (y - 1) // 2)
+                # green_spawn = ((x - 1) // 2, (y - 1) // 2)
             elif level[y][x] == 'R':
                 Tile('empty', (x - 1) // 2, (y - 1) // 2)
-                player_two = Player((x - 1) // 2, (y - 1) // 2)
-                #red_spawn = ((x - 1) // 2, (y - 1) // 2)
+                if PLAYRSCOUNT == 2:
+                    player_two = Player((x - 1) // 2, (y - 1) // 2)
+                    # red_spawn = ((x - 1) // 2, (y - 1) // 2)
             elif level[y][x] == 'E':
                 Tile('empty', (x - 1) // 2, (y - 1) // 2)
                 enemies_spawnpoints.append(((x - 1) // 2, (y - 1) // 2))
