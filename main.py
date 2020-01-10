@@ -12,25 +12,64 @@ PLAYRSCOUNT = 0
 
 
 # Включить, когда будет объект игрока с координатами
+# UPD. Включение откладывается, т.к. есть новая версия
 #
 # def move_player(player, delta_x, delta_y):
-#     player.x += delta_x
-#     player.y += delta_y
+#     print("Привет")
+#     if player is not None:
+#         print("Привет еще раз")
+#         player.rect = player.image.get_rect().move(delta_x, delta_y)
+
+# Вторая версия функции
+#
+def move_player(key):
+    global PLAYRSKEYS, KEYBTTNS, player_one, player_two
+
+    if key in PLAYRSKEYS["player_one"]:
+        player = player_one
+    else:
+        player = player_two
+
+    delta_x = 0
+    delta_y = 0
+    if key in {119, 273}:
+        delta_y -= VELOCITY
+    elif key in {97, 276}:
+        delta_x -= VELOCITY
+    elif key in {115, 274}:
+        delta_y += VELOCITY
+    else:
+        delta_x += VELOCITY
+
+    player.rect = player.rect.move(delta_x, delta_y)
 
 
-# Объект игрока (пока непонятно с классом, поэтому None) и временная константа его скорости
+# Объект игрока и константа его скорости
 player_one = None
+player_two = None
 VELOCITY = 10
 
 # Подобным образом можно легко задать обработку любого события
 # Но есть небольшой минус - все события по разу вызываются сразу после создания словаря
-KEYBTTNS = {# "w": move_player(player_one, 0, VELOCITY),
-            # "a": move_player(player_one, -VELOCITY, 0),
-            # "s": move_player(player_one, 0, -VELOCITY),
-            # "d": move_player(player_one, VELOCITY, 0),
-            "q": print("Привет!")}
+# UPD. Это неправильный способ, нормальный ниже.
+#
+# KEYBTTNS = {"w": move_player(player_one, 0, VELOCITY),
+#             "a": move_player(player_one, -VELOCITY, 0),
+#             "s": move_player(player_one, 0, -VELOCITY),
+#             "d": move_player(player_one, VELOCITY, 0)}
 
-# Пример использования
+PLAYRSKEYS = {"player_one": {119, 97, 115, 100},
+              "player_two": {273, 276, 274, 275}}
+KEYBTTNS = {119: move_player,
+            97: move_player,
+            115: move_player,
+            100: move_player,
+            273: move_player,
+            276: move_player,
+            274: move_player,
+            275: move_player}
+
+# Пример использования (в функции game есть нормальнее)
 #
 # for event in pygame.event.get():
 #     if event.type == pygame.QUIT:
@@ -148,7 +187,6 @@ def start_screen():
                 else:
                     main_menu(moved=btn)
 
-
         if not in_menu:
             break
 
@@ -219,6 +257,7 @@ def choose_mode_screen():
 
 
 def generate_level(level):
+    global player_one, player_two
     green_spawnpoint, red_spawnpoint = None, None  # Точки появления для игроков
     enemies_spawnpoints = []  # список с точками появления проивников
 
@@ -229,10 +268,12 @@ def generate_level(level):
             elif level[y][x] == '#':
                 Tile('wall', (x - 1) // 2, (y - 1) // 2)
             elif level[y][x] == 'G':
-                Tile('empty', (x - 1) // 2, (y - 1) // 2)
+                # Tile('empty', (x - 1) // 2, (y - 1) // 2)
+                player_one = Player((x - 1) // 2, (y - 1) // 2)
                 green_spawn = ((x - 1) // 2, (y - 1) // 2)
             elif level[y][x] == 'R':
-                Tile('empty', (x - 1) // 2, (y - 1) // 2)
+                # Tile('empty', (x - 1) // 2, (y - 1) // 2)
+                player_two = Player((x - 1) // 2, (y - 1) // 2)
                 red_spawn = ((x - 1) // 2, (y - 1) // 2)
             elif level[y][x] == 'E':
                 Tile('empty', (x - 1) // 2, (y - 1) // 2)
@@ -264,8 +305,16 @@ def game():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
+            elif event.type == pygame.KEYDOWN:
+                key = event.key
+                print(key)
+                if key in KEYBTTNS:
+                    print("Ура!")
+                    KEYBTTNS[key](key)
+
         screen.fill(pygame.Color('black'))
         all_sprites.draw(screen)
+        player_group.draw(screen)
         pygame.display.flip()
         clock.tick(FPS)
     pass
@@ -307,10 +356,17 @@ class Boarding(pygame.sprite.Sprite):
         self.image = board_images[board_type]
         board_width = board_height = 0
         if board_type == 'verti':
-            board_width =  4
+            board_width = 4
         elif board_type == 'horiz':
             board_height = 4
         self.rect = self.image.get_rect().move(tile_width * pos_x - board_width, tile_height * pos_y - board_height)
+
+
+class Player(pygame.sprite.Sprite):
+    def __init__(self, pos_x, pos_y):
+        super().__init__(player_group, all_sprites)
+        self.image = player_image
+        self.rect = self.image.get_rect().move(tile_width * pos_x, tile_height * pos_y)
 
 
 start_screen()
