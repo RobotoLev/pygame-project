@@ -28,7 +28,10 @@ def move_player(key):
     if key in PLAYRSKEYS["player_one"]:
         player = player_one
     else:
-        player = player_two
+        if PLAYRSCOUNT == 2:
+            player = player_two
+        else:
+            return
 
     delta_x = 0
     delta_y = 0
@@ -49,17 +52,11 @@ player_one = None
 player_two = None
 VELOCITY = 10
 
-# Подобным образом можно легко задать обработку любого события
-# Но есть небольшой минус - все события по разу вызываются сразу после создания словаря
-# UPD. Это неправильный способ, нормальный ниже.
-#
-# KEYBTTNS = {"w": move_player(player_one, 0, VELOCITY),
-#             "a": move_player(player_one, -VELOCITY, 0),
-#             "s": move_player(player_one, 0, -VELOCITY),
-#             "d": move_player(player_one, VELOCITY, 0)}
 
+# Бинд кнопок для игроков
 PLAYRSKEYS = {"player_one": {119, 97, 115, 100},
               "player_two": {273, 276, 274, 275}}
+# Бинд действий на кнопки
 KEYBTTNS = {119: move_player,
             97: move_player,
             115: move_player,
@@ -68,16 +65,6 @@ KEYBTTNS = {119: move_player,
             276: move_player,
             274: move_player,
             275: move_player}
-
-# Пример использования (в функции game есть нормальнее)
-#
-# for event in pygame.event.get():
-#     if event.type == pygame.QUIT:
-#         terminate()
-#     elif event.type == pygame.KEYDOWN:
-#         key = event.unicode.lower()
-#         if key in KEYBTTNS:
-#             KEYBTTNS[key]
 
 
 pygame.init()
@@ -273,8 +260,9 @@ def generate_level(level):
                 green_spawn = ((x - 1) // 2, (y - 1) // 2)
             elif level[y][x] == 'R':
                 Tile('empty', (x - 1) // 2, (y - 1) // 2)
-                player_two = Player((x - 1) // 2, (y - 1) // 2)
-                red_spawn = ((x - 1) // 2, (y - 1) // 2)
+                if PLAYRSCOUNT == 2:
+                    player_two = Player((x - 1) // 2, (y - 1) // 2)
+                    red_spawn = ((x - 1) // 2, (y - 1) // 2)
             elif level[y][x] == 'E':
                 Tile('empty', (x - 1) // 2, (y - 1) // 2)
                 enemies_spawnpoints.append(((x - 1) // 2, (y - 1) // 2))
@@ -367,7 +355,11 @@ class Player(pygame.sprite.Sprite):
         self.image = player_image
         self.rect = self.image.get_rect().move(tile_width * pos_x, tile_height * pos_y)
 
+        # self.angle = 0
 
-start_screen()
+
+# start_screen()
+# PLAYRSCOUNT = 2
+game()
 
 pygame.quit()
