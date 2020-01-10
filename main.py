@@ -64,6 +64,7 @@ KEYBTTNS = {119: move_player,
             276: move_player,
             274: move_player,
             275: move_player}
+VOLUME = 0
 
 
 pygame.init()
@@ -72,6 +73,37 @@ clock = pygame.time.Clock()
 
 running = True
 iteration = 0
+
+
+def settings(chosed=None, moved=None):
+    screen.fill((0, 0, 0))
+    font = pygame.font.Font(None, 50)
+    texts = ['1 игрок', '2 игрока', 'Громкость', 'НАЗАД']
+    for i in range(4):
+        cr = (100, 255, 100)
+        width = 1
+        if chosed == i:
+            cr = (100, 175, 100)
+            width = 2
+        elif moved == i:
+            cr = (170, 255, 170)
+
+        text = font.render(texts[i], 1, cr)
+        text_h = text.get_height()
+        text_w = text.get_width()
+        text_y = HEIGHT // 5 * (i + 1) - text_h // 2
+        if i != 3:
+            text_x = WIDTH // 8 - text_w // 2
+        else:
+            text_x = WIDTH // 2 - text_w // 2
+        screen.blit(text, (text_x, text_y))
+        if i != 3:
+            text_x = WIDTH // 3 * 2
+            text_w = WIDTH // 4
+        pygame.draw.rect(screen, (0, 255, 0), (text_x - 10 - width // 2, text_y - 10 - width // 2,
+                                               text_w + 20, text_h + 20), width)
+
+
 
 
 def choose_mode(chosed=None, moved=None):
@@ -184,8 +216,45 @@ def start_screen():
 
 
 def settings_screen():
-    pass
+    flag = None
+    settings()
+    in_menu = True
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                x, y = event.pos
+                btn = what_is_pressed(MENUBTTNS, (x, y))
+                if btn == 3:
+                    flag = main_menu
+                elif btn == 2:
+                    flag = None
+                elif btn == 1:
+                    flag = 1
+                elif btn == 0:
+                    flag = 0
+                main_menu(btn)
+            elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+                if flag is not None:
+                    iter = what_is_pressed(MENUBTTNS, event.pos)
+                    if iter == btn:
+                        in_menu = False
+                        break
+                    else:
+                        flag = None
+                    main_menu()
+            elif event.type == pygame.MOUSEMOTION:
+                butn = what_is_pressed(MENUBTTNS, event.pos)
+                if 1 in event.buttons:
+                    main_menu(btn, butn)
+                else:
+                    main_menu(moved=butn)
+        if not in_menu:
+            break
 
+        pygame.display.flip()
+        clock.tick(FPS)
 
 def continue_screen():
     pass
