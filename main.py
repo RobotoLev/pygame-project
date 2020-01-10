@@ -270,11 +270,11 @@ def generate_level(level):
             elif level[y][x] == 'G':
                 Tile('empty', (x - 1) // 2, (y - 1) // 2)
                 player_one = Player((x - 1) // 2, (y - 1) // 2)
-                green_spawn = ((x - 1) // 2, (y - 1) // 2)
+                #green_spawn = ((x - 1) // 2, (y - 1) // 2)
             elif level[y][x] == 'R':
                 Tile('empty', (x - 1) // 2, (y - 1) // 2)
                 player_two = Player((x - 1) // 2, (y - 1) // 2)
-                red_spawn = ((x - 1) // 2, (y - 1) // 2)
+                #red_spawn = ((x - 1) // 2, (y - 1) // 2)
             elif level[y][x] == 'E':
                 Tile('empty', (x - 1) // 2, (y - 1) // 2)
                 enemies_spawnpoints.append(((x - 1) // 2, (y - 1) // 2))
@@ -286,6 +286,16 @@ def generate_level(level):
                 Building('lb', (x - 1) // 2, (y - 1) // 2)
             elif level[y][x] == '3':
                 Building('rb', (x - 1) // 2, (y - 1) // 2)
+            elif level[y][x] == '8':
+                Building('mt', (x - 1) // 2, (y - 1) // 2)
+            elif level[y][x] == '6':
+                Building('mr', (x - 1) // 2, (y - 1) // 2)
+            elif level[y][x] == '2':
+                Building('mb', (x - 1) // 2, (y - 1) // 2)
+            elif level[y][x] == '4':
+                Building('ml', (x - 1) // 2, (y - 1) // 2)
+            elif level[y][x] == '5':
+                Building('center', (x - 1) // 2, (y - 1) // 2)
     for y in range(1, len(level), 2):
         for x in range(0, len(level[y]), 2):
             if level[y][x] == 'V':
@@ -325,7 +335,12 @@ player_image = load_image('tank_green_mk1.png')
 building_images = {'rt': load_image('building_right-top.png'),
                    'lt': load_image('building_left-top.png'),
                    'rb': load_image('building_right-bot.png'),
-                   'lb': load_image('building_left-bot.png')}
+                   'lb': load_image('building_left-bot.png'),
+                   'mt': load_image('building_mid-top.png'),
+                   'mr': load_image('building_mid-right.png'),
+                   'mb': load_image('building_mid-bot.png'),
+                   'ml': load_image('building_mid-left.png'),
+                   'center': load_image('building_center.png')}
 # группы спрайтов
 tile_width, tile_height = 50, 50
 all_sprites = pygame.sprite.Group()
@@ -354,10 +369,8 @@ class Boarding(pygame.sprite.Sprite):
         super().__init__(board_group, all_sprites)
         self.image = board_images[board_type]
         board_width = board_height = 0
-        if board_type == 'verti':
-            board_width = 4
-        elif board_type == 'horiz':
-            board_height = 4
+        board_width = 4
+        board_height = 4
         self.rect = self.image.get_rect().move(tile_width * pos_x - board_width, tile_height * pos_y - board_height)
 
 
