@@ -3,7 +3,7 @@ import pygame
 from source.system_functions import load_image, terminate, load_level
 
 
-FPS = 50
+FPS = 30
 WIDTH = 1072
 HEIGHT = 603
 MENUBTTNS = [None for _ in range(4)]
@@ -21,50 +21,50 @@ PLAYRSCOUNT = 0
 #         player.rect = player.image.get_rect().move(delta_x, delta_y)
 
 # Вторая версия функции
+# Закоментированно по ненадобности
 #
-def move_player(key):
-    global PLAYRSKEYS, KEYBTTNS, player_one, player_two
-
-    if key in PLAYRSKEYS["player_one"]:
-        player = player_one
-    else:
-        if PLAYRSCOUNT == 2:
-            player = player_two
-        else:
-            return
-
-    delta_x = 0
-    delta_y = 0
-    if key in {119, 273}:
-        delta_y -= VELOCITY
-    elif key in {97, 276}:
-        delta_x -= VELOCITY
-    elif key in {115, 274}:
-        delta_y += VELOCITY
-    else:
-        delta_x += VELOCITY
-
-    player.rect = player.rect.move(delta_x, delta_y)
+# def move_player(key):
+#     global PLAYRSKEYS, KEYBTTNS, player_one, player_two
+#
+#     if key in PLAYRSKEYS["player_one"]:
+#         player = player_one
+#     else:
+#         if PLAYRSCOUNT == 2:
+#             player = player_two
+#         else:
+#             return
+#
+#     delta_x = 0
+#     delta_y = 0
+#     if key in {119, 273}:
+#         delta_y -= VELOCITY
+#     elif key in {97, 276}:
+#         delta_x -= VELOCITY
+#     elif key in {115, 274}:
+#         delta_y += VELOCITY
+#     else:
+#         delta_x += VELOCITY
+#
+#     player.rect = player.rect.move(delta_x, delta_y)
 
 
 # Объект игрока и константа его скорости
 player_one = None
 player_two = None
-VELOCITY = 10
+VELOCITY = 2
 
-WASDBTTNS = [(pygame.K_w, pygame.K_s, pygame.K_a, pygame.K_d), pygame.K_LSHIFT]
-ARRWBTTNS = [(pygame.K_UP, pygame.K_DOWN, pygame.K_LEFT, pygame.K_RIGHT), pygame.K_SPACE]
-PLAYRSKEYS = {"player_one": WASDBTTNS,
-              "player_two": ARRWBTTNS}
-KEYBTTNS = {119: move_player,
-            97: move_player,
-            115: move_player,
-            100: move_player,
-            273: move_player,
-            276: move_player,
-            274: move_player,
-            275: move_player}
-VOLUME = 0
+WASDBTTNS = [pygame.K_w, pygame.K_s, pygame.K_a, pygame.K_d, pygame.K_LSHIFT]
+ARRWBTTNS = [pygame.K_UP, pygame.K_DOWN, pygame.K_LEFT, pygame.K_RIGHT, pygame.K_SPACE]
+PLAYRSKEYS = [WASDBTTNS, ARRWBTTNS]
+ANGLES = {0: 0, 1: 2, 2: 3, 3: 1}
+# KEYBTTNS = {119: move_player,
+#             97: move_player,
+#             115: move_player,
+#             100: move_player,
+#             273: move_player,
+#             276: move_player,
+#             274: move_player,
+#             275: move_player}
 
 
 pygame.init()
@@ -376,13 +376,34 @@ def game():
             elif event.type == pygame.KEYDOWN:
                 key = event.key
                 print("Pressed", key)
-                if key in KEYBTTNS:
-                    KEYBTTNS[key](key)
+                # if key in KEYBTTNS:
+                #     KEYBTTNS[key](key)
+                for num, keys in enumerate(PLAYRSKEYS):
+                    if key not in keys:
+                        continue
+                    if num == 0:
+                        player = player_one
+                    else:
+                        player = player_two
+                    idx = keys.index(key)
+                    if idx != 4:
+                        player.moving = True
+                        player.angle = ANGLES[idx]
+            elif event.type == pygame.KEYUP:
+                key = event.key
+                if (key in PLAYRSKEYS[0] and
+                        (PLAYRSKEYS[0].index(key), player_one.angle) in list(ANGLES.items())):
+                    player_one.moving = False
+                if (key in PLAYRSKEYS[1] and
+                        (PLAYRSKEYS[1].index(key), player_two.angle) in list(ANGLES.items())):
+                    player_two.moving = False
 
         screen.fill(pygame.Color('black'))
         all_sprites.draw(screen)
         player_group.draw(screen)
         pygame.display.flip()
+
+        player_group.update()
         clock.tick(FPS)
     pass
 
@@ -438,7 +459,26 @@ class Player(pygame.sprite.Sprite):
         self.image = player_image
         self.rect = self.image.get_rect().move(tile_width * pos_x, tile_height * pos_y)
 
+        self.angle = 0
+        self.moving = False
+
+    def update(self):
+        if not self.moving:
+            return
+
+        delta_x = 0
+        delta_y = 0
+        if self.angle == 0:
+            delta_y -= VELOCITY
+        elif self.angle == 1:
+            delta_x += VELOCITY
+        elif self.angle == 2:
+            delta_y += VELOCITY
+        else:
+            delta_x -= VELOCITY
+
+        self.rect = self.rect.move(delta_x, delta_y)
+
 
 start_screen()
-
 pygame.quit()
