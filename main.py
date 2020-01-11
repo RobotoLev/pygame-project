@@ -21,6 +21,7 @@ PLAYRSKEYS = [WASDBTTNS, ARRWBTTNS]
 ANGLES = {0: 0, 1: 2, 2: 3, 3: 1}
 
 TANK_DAMAGE = [None, 400, 400, 500]
+SHOT_DAMAGE = [None, 100, 200, 500]
 
 
 pygame.init()
@@ -482,9 +483,11 @@ def game():
                             continue
 
                     idx = keys.index(key)
-                    if idx != 4:
+                    if 0 <= idx <= 3:
                         player.moving = True
                         player.angle = ANGLES[idx]
+                    if idx == 4:
+                        player.shoot()
             elif event.type == pygame.KEYUP:
                 key = event.key
                 if (key in PLAYRSKEYS[0] and
@@ -523,9 +526,12 @@ building_images = {'rt': load_image('building_right-top.png'),
                    'wall': load_image('box.png')}
 # группы спрайтов
 tile_width, tile_height = 50, 50
+
 all_sprites = pygame.sprite.Group()
 tile_group = pygame.sprite.Group()
 player_group = pygame.sprite.Group()
+
+object_group = pygame.sprite.Group()
 damageable_group = pygame.sprite.Group()
 solid_group = pygame.sprite.Group()
 
@@ -539,7 +545,7 @@ class Tile(pygame.sprite.Sprite):
 
 class Object(pygame.sprite.Sprite):
     def __init__(self, *groups):
-        super().__init__(groups)
+        super().__init__(list(groups) + [object_group])
         self.strength = 1000
 
     def damage(self, damage_level):
@@ -573,12 +579,12 @@ class Boarding(Object):
                                                tile_height * pos_y - board_height)
 
 
-class Player(Object):
+class Player(pygame.sprite.Sprite):
     def __init__(self, num, pos_x, pos_y):
         super().__init__(player_group, all_sprites)
 
         self.num = num
-        self.level = 1
+        self.level = 2
         self.angle = 0
         self.moving = False
 
@@ -623,6 +629,48 @@ class Player(Object):
         else:
             images = player_two_images
         self.image = images[self.angle]
+
+    def shoot(self):
+        Shot(self.rect.x, self.rect.y, self.angle, self.level)
+
+
+class Shot(pygame.sprite.Sprite):
+    def __init__(self, pos_x, pos_y, angle, level):
+        super().__init__(all_sprites)
+        self.angle = angle
+
+        if angle == 0:
+            self.x = pos_x + tile_width / 2 - 1
+            self.y = pos_y
+        elif angle == 1:
+            self.x = pos_x + tile_width
+            self.y = pos_y + tile_height / 2 - 1
+        elif angle == 2:
+            self.x = pos_x + tile_width / 2 - 1
+            self.y = pos_y + tile_height
+        else:
+            self.x = pos_x
+            self.y = pos_y + tile_height / 2 - 1
+        self.rect = pygame.Rect(self.x, self.y, 4, 4)
+
+        while pygame.sprite.spritecollideany(self, object_group) is None:
+            delta_x = 0
+            delta_y = 0
+            if self.angle == 0:
+                delta_y -= VELOCITY
+            elif self.angle == 1:
+                delta_x += VELOCITY
+            elif self.angle == 2:
+                delta_y += VELOCITY
+            else:
+                delta_x -= VELOCITY
+
+            self.rect = self.rect.move(delta_x, delta_y)
+
+        res = pygame.sprite.spritecollideany(self, object_group)
+        res.damage(SHOT_DAMAGE[level])
+
+        self.kill()
 
 
 start_screen()
