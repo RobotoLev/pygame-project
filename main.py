@@ -22,6 +22,7 @@ ANGLES = {0: 0, 1: 2, 2: 3, 3: 1}
 
 TANK_DAMAGE = [None, 400, 400, 500]
 SHOT_DAMAGE = [None, 100, 200, 500]
+SHOT_VELOCITY = 5
 
 
 pygame.init()
@@ -579,7 +580,7 @@ class Boarding(Object):
                                                tile_height * pos_y - board_height)
 
 
-class Player(pygame.sprite.Sprite):
+class Player(Object):
     def __init__(self, num, pos_x, pos_y):
         super().__init__(player_group, all_sprites)
 
@@ -653,17 +654,19 @@ class Shot(pygame.sprite.Sprite):
             self.y = pos_y + tile_height / 2 - 1
         self.rect = pygame.Rect(self.x, self.y, 4, 4)
 
-        while pygame.sprite.spritecollideany(self, object_group) is None:
+        start = True
+        while pygame.sprite.spritecollideany(self, object_group) is None or start:
+            start = False
             delta_x = 0
             delta_y = 0
             if self.angle == 0:
-                delta_y -= VELOCITY
+                delta_y -= SHOT_VELOCITY
             elif self.angle == 1:
-                delta_x += VELOCITY
+                delta_x += SHOT_VELOCITY
             elif self.angle == 2:
-                delta_y += VELOCITY
+                delta_y += SHOT_VELOCITY
             else:
-                delta_x -= VELOCITY
+                delta_x -= SHOT_VELOCITY
 
             self.rect = self.rect.move(delta_x, delta_y)
 
