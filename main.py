@@ -74,6 +74,34 @@ running = True
 iteration = 0
 
 
+def pause(chosed=None, moved=None):
+    screen.fill((0, 0, 0))
+    #screen.fill((0, 0, 0))
+    all_sprites.draw(screen)
+    image = pygame.Surface([WIDTH // 3, HEIGHT])
+    image.fill(pygame.Color("black"))
+    screen.blit(image, (WIDTH // 3, 0))
+    font = pygame.font.Font(None, 50)
+    texts = ["Продолжить", "Настройки", "Выйти в меню", "Выход"]
+    for i in range(4):
+        width = 1
+        cr = (100, 255, 100)
+        if i == chosed:
+            cr = (50, 175, 100)
+            width = 2
+        elif i == moved:
+            cr = (180, 255, 180)
+        text = font.render(texts[i], 1, cr)
+        text_h = text.get_height()
+        text_w = text.get_width()
+        text_x = WIDTH // 2 - text.get_width() // 2
+        text_y = (HEIGHT // 5) * i + text_h // 2 + HEIGHT // 10
+        screen.blit(text, (text_x, text_y))
+        pygame.draw.rect(screen, (0, 255, 0), (text_x - 10 - width // 2, text_y - 10,
+                                               text_w + 20 - width // 2, text_h + 20), width)
+        MENUBTTNS[i] = ((text_x - 10 - width // 2, text_y - 10,
+                         text_w + 20 - width // 2, text_h + 20), cr)
+
 def settings(chosed=None, moved=None):
     screen.fill((0, 0, 0))
     font = pygame.font.Font(None, 50)
@@ -233,7 +261,58 @@ def start_screen():
     flag()
 
 
-def settings_screen():
+def pause_screen():
+    pause()
+    in_menu = True
+    flag = None
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                return
+            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                x, y = event.pos
+                btn = what_is_pressed(MENUBTTNS, (x, y))
+                if btn == 3:
+                    flag = terminate
+                elif btn == 2:
+                    flag = settings_screen
+                elif btn == 1:
+                    flag = continue_screen
+                elif btn == 0:
+                    flag = choose_mode_screen
+                pause(btn)
+            elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+                if flag is not None:
+                    iter = what_is_pressed(MENUBTTNS, event.pos)
+                    if iter == btn:
+                        if iter == 0:
+                            return
+                        elif iter == 1:
+                            settings_screen(True)
+                        elif iter == 2:
+                            return start_screen
+                        elif iter == 3:
+                            terminate()
+                        break
+                    else:
+                        flag = None
+                    pause()
+            elif event.type == pygame.MOUSEMOTION:
+                butn = what_is_pressed(MENUBTTNS, event.pos)
+                if 1 in event.buttons:
+                    pause(btn, butn)
+                else:
+                    pause(moved=butn)
+        if not in_menu:
+            break
+
+        pygame.display.flip()
+        clock.tick(FPS)
+
+
+def settings_screen(on_pause=False):
     flag = None
     global VOLUME
     settings()
@@ -259,6 +338,8 @@ def settings_screen():
                     iter = what_is_pressed(STNGBTTNS, event.pos)
                     if iter == btn:
                         if iter == 3:
+                            if on_pause:
+                                return
                             in_menu = False
                             break
                         elif iter == 0:
@@ -406,6 +487,7 @@ def generate_level(level):
 
 def game():
     print('Game has been started')
+    in_game = True
     level = load_level('level1.txt')
     generate_level(level)
     while True:
@@ -414,6 +496,11 @@ def game():
                 terminate()
             elif event.type == pygame.KEYDOWN:
                 key = event.key
+                if key == pygame.K_ESCAPE:
+                    res = pause_screen()
+                    if res is not None:
+                        in_game = False
+                        break
                 print("Pressed", key)
                 # if key in KEYBTTNS:
                 #     KEYBTTNS[key](key)
@@ -440,6 +527,8 @@ def game():
                 if (key in PLAYRSKEYS[1] and PLAYRSCOUNT == 2 and
                         (PLAYRSKEYS[1].index(key), player_two.angle) in list(ANGLES.items())):
                     player_two.moving = False
+        if not in_game:
+            break
 
         screen.fill(pygame.Color('black'))
         all_sprites.draw(screen)
@@ -448,7 +537,7 @@ def game():
 
         player_group.update()
         clock.tick(FPS)
-    pass
+    res()
 
 
 tile_images = {'empty': load_image('grass.png'), 'wall': load_image('box.png')}
