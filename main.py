@@ -576,6 +576,15 @@ class Player(pygame.sprite.Sprite):
             delta_x -= VELOCITY
 
         self.rect = self.rect.move(delta_x, delta_y)
+
+        condition = (pygame.sprite.spritecollide(self, building_group, False) or
+                     pygame.sprite.spritecollide(self, board_group, False))
+        if self.num == 1 and PLAYRSCOUNT == 2:
+            condition = condition or pygame.sprite.collide_rect(self, player_two)
+        elif self.num == 2:
+            condition = condition or pygame.sprite.collide_rect(self, player_one)
+        if condition:
+            self.rect = self.rect.move(-delta_x, -delta_y)
         self.update_image()
 
     def update_image(self):
