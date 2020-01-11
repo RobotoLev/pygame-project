@@ -399,7 +399,7 @@ def generate_level(level):
             if level[y][x] == '.':
                 Tile('empty', (x - 1) // 2, (y - 1) // 2)
             elif level[y][x] == '#':
-                Tile('wall', (x - 1) // 2, (y - 1) // 2)
+                Building('wall', (x - 1) // 2, (y - 1) // 2)
             elif level[y][x] == 'G':
                 Tile('empty', (x - 1) // 2, (y - 1) // 2)
                 player_one = Player(1, (x - 1) // 2, (y - 1) // 2)
@@ -412,6 +412,9 @@ def generate_level(level):
             elif level[y][x] == 'E':
                 Tile('empty', (x - 1) // 2, (y - 1) // 2)
                 enemies_spawnpoints.append(((x - 1) // 2, (y - 1) // 2))
+            elif level[y][x] == 'V':
+                Tile('rail_vert', (x - 1) // 2, (y - 1) // 2)
+
             elif level[y][x] == '9':
                 Building('rt', (x - 1) // 2, (y - 1) // 2)
             elif level[y][x] == '7':
@@ -501,7 +504,7 @@ def game():
     res()
 
 
-tile_images = {'empty': load_image('grass.png'), 'wall': load_image('box.png')}
+tile_images = {'empty': load_image('grass.png')}
 board_images = {'horiz': load_image('board_horizontal.png'),
                 'verti': load_image('board_vertical.png')}
 player_one_images = [load_image('tanks\\tank_green_mk1_{}.png'.format(i)) for i in range(4)]
@@ -514,7 +517,8 @@ building_images = {'rt': load_image('building_right-top.png'),
                    'mr': load_image('building_mid-right.png'),
                    'mb': load_image('building_mid-bot.png'),
                    'ml': load_image('building_mid-left.png'),
-                   'center': load_image('building_center.png')}
+                   'center': load_image('building_center.png'),
+                   'wall': load_image('box.png')}
 # группы спрайтов
 tile_width, tile_height = 50, 50
 all_sprites = pygame.sprite.Group()
