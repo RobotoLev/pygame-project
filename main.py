@@ -20,7 +20,7 @@ ARRWBTTNS = [pygame.K_UP, pygame.K_DOWN, pygame.K_LEFT, pygame.K_RIGHT, pygame.K
 PLAYRSKEYS = [WASDBTTNS, ARRWBTTNS]
 ANGLES = {0: 0, 1: 2, 2: 3, 3: 1}
 
-TANK_DAMAGE = [None, 100, 200, 500]
+TANK_DAMAGE = [None, 400, 400, 500]
 
 
 pygame.init()
