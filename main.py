@@ -417,26 +417,31 @@ def generate_level(level):
                 Tile('empty', (x - 1) // 2, (y - 1) // 2)
                 enemies_spawnpoints.append(((x - 1) // 2, (y - 1) // 2))
             elif level[y][x] == 'V':
-                Tile('rail_vert', (x - 1) // 2, (y - 1) // 2)
-
-            elif level[y][x] == '9':
-                Building('rt', (x - 1) // 2, (y - 1) // 2)
-            elif level[y][x] == '7':
-                Building('lt', (x - 1) // 2, (y - 1) // 2)
-            elif level[y][x] == '1':
-                Building('lb', (x - 1) // 2, (y - 1) // 2)
-            elif level[y][x] == '3':
-                Building('rb', (x - 1) // 2, (y - 1) // 2)
-            elif level[y][x] == '8':
-                Building('mt', (x - 1) // 2, (y - 1) // 2)
-            elif level[y][x] == '6':
-                Building('mr', (x - 1) // 2, (y - 1) // 2)
+                Tile('ver_rail', (x - 1) // 2, (y - 1) // 2)
+            elif level[y][x] == 'H':
+                Tile('hor_rail', (x - 1) // 2, (y - 1) // 2)
             elif level[y][x] == '2':
-                Building('mb', (x - 1) // 2, (y - 1) // 2)
-            elif level[y][x] == '4':
-                Building('ml', (x - 1) // 2, (y - 1) // 2)
-            elif level[y][x] == '5':
-                Building('center', (x - 1) // 2, (y - 1) // 2)
+                Tile('ver_rail_be', (x - 1) // 2, (y - 1) // 2)
+            elif level[y][x] == '8':
+                Tile('ver_rail_te', (x - 1) // 2, (y - 1) // 2)
+            # elif level[y][x] == '9':
+            #     Building('rt', (x - 1) // 2, (y - 1) // 2)
+            # elif level[y][x] == '7':
+            #     Building('lt', (x - 1) // 2, (y - 1) // 2)
+            # elif level[y][x] == '1':
+            #     Building('lb', (x - 1) // 2, (y - 1) // 2)
+            # elif level[y][x] == '3':
+            #     Building('rb', (x - 1) // 2, (y - 1) // 2)
+            # elif level[y][x] == '8':
+            #     Building('mt', (x - 1) // 2, (y - 1) // 2)
+            # elif level[y][x] == '6':
+            #     Building('mr', (x - 1) // 2, (y - 1) // 2)
+            # elif level[y][x] == '2':
+            #     Building('mb', (x - 1) // 2, (y - 1) // 2)
+            # elif level[y][x] == '4':
+            #     Building('ml', (x - 1) // 2, (y - 1) // 2)
+            # elif level[y][x] == '5':
+            #     Building('center', (x - 1) // 2, (y - 1) // 2)
     for y in range(1, len(level), 2):
         for x in range(0, len(level[y]), 2):
             if level[y][x] == 'V':
@@ -510,21 +515,28 @@ def game():
     res()
 
 
-tile_images = {'empty': load_image('grass.png')}
+tile_images = {'empty': load_image('grass.png'),
+               'hor_rail': load_image('horizontal_rails.png'),
+               'hor_rail_le': load_image('horizontal_rails_lef_end.png'),
+               'hor_rail_re': load_image('horizontal_rails_rig_end.png'),
+               'ver_rail': load_image('vertical_rails.png'),
+               'ver_rail_te': load_image('vertical_rails_top_end.png'),
+               'ver_rail_be': load_image('vertical_rails_bot_end.png')}
 board_images = {'horiz': load_image('board_horizontal.png'),
                 'verti': load_image('board_vertical.png')}
 player_one_images = [load_image('tanks\\tank_green_mk1_{}.png'.format(i)) for i in range(4)]
 player_two_images = [load_image('tanks\\tank_red_mk1_{}.png'.format(i)) for i in range(4)]
-building_images = {'rt': load_image('building_right-top.png'),
-                   'lt': load_image('building_left-top.png'),
-                   'rb': load_image('building_right-bot.png'),
-                   'lb': load_image('building_left-bot.png'),
-                   'mt': load_image('building_mid-top.png'),
-                   'mr': load_image('building_mid-right.png'),
-                   'mb': load_image('building_mid-bot.png'),
-                   'ml': load_image('building_mid-left.png'),
-                   'center': load_image('building_center.png'),
-                   'wall': load_image('box.png')}
+# building_images = {'rt': load_image('building_right-top.png'),
+#                    'lt': load_image('building_left-top.png'),
+#                    'rb': load_image('building_right-bot.png'),
+#                    'lb': load_image('building_left-bot.png'),
+#                    'mt': load_image('building_mid-top.png'),
+#                    'mr': load_image('building_mid-right.png'),
+#                    'mb': load_image('building_mid-bot.png'),
+#                    'ml': load_image('building_mid-left.png'),
+#                    'center': load_image('building_center.png'),
+#                    'wall': load_image('box.png')}
+building_images = {'wall': load_image('box.png')}
 # группы спрайтов
 tile_width, tile_height = 50, 50
 
