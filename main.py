@@ -13,12 +13,14 @@ PLAYRSCOUNT = 0
 
 player_one = None
 player_two = None
-VELOCITY = 2
+VELOCITY = 5
 VOLUME = 50
 WASDBTTNS = [pygame.K_w, pygame.K_s, pygame.K_a, pygame.K_d, pygame.K_LSHIFT]
 ARRWBTTNS = [pygame.K_UP, pygame.K_DOWN, pygame.K_LEFT, pygame.K_RIGHT, pygame.K_SPACE]
 PLAYRSKEYS = [WASDBTTNS, ARRWBTTNS]
 ANGLES = {0: 0, 1: 2, 2: 3, 3: 1}
+
+TANK_DAMAGE = [None, 100, 200, 500]
 
 
 pygame.init()
@@ -450,9 +452,9 @@ def game():
 
     all_sprites.empty()
     tile_group.empty()
-    board_group.empty()
     player_group.empty()
-    building_group.empty()
+    solid_group.empty()
+    damageable_group.empty()
 
     level = load_level('level1.txt')
     generate_level(level)
@@ -499,7 +501,7 @@ def game():
         player_group.draw(screen)
         pygame.display.flip()
 
-        player_group.update()
+        all_sprites.update()
         clock.tick(FPS)
     res()
 
@@ -523,9 +525,9 @@ building_images = {'rt': load_image('building_right-top.png'),
 tile_width, tile_height = 50, 50
 all_sprites = pygame.sprite.Group()
 tile_group = pygame.sprite.Group()
-board_group = pygame.sprite.Group()
 player_group = pygame.sprite.Group()
-building_group = pygame.sprite.Group()
+damageable_group = pygame.sprite.Group()
+solid_group = pygame.sprite.Group()
 
 
 class Tile(pygame.sprite.Sprite):
@@ -535,16 +537,34 @@ class Tile(pygame.sprite.Sprite):
         self.rect = self.image.get_rect().move(tile_width * pos_x, tile_height * pos_y)
 
 
-class Building(pygame.sprite.Sprite):
+class Object(pygame.sprite.Sprite):
+    def __init__(self, *groups):
+        super().__init__(groups)
+        self.strength = 1000
+
+    def damage(self, damage_level):
+        self.strength -= damage_level
+
+    def update(self):
+        if self.strength <= 0:
+            self.kill()
+
+        # Сюда можно подцепить подмену изображений с уменьшением прочности
+        # (забор трескается)
+
+
+class Building(Object):
     def __init__(self, tile_type, pos_x, pos_y):
-        super().__init__(building_group, all_sprites)
+        super().__init__(solid_group, all_sprites)
+        self.strength = float("inf")
         self.image = building_images[tile_type]
         self.rect = self.image.get_rect().move(tile_width * pos_x, tile_height * pos_y)
 
 
-class Boarding(pygame.sprite.Sprite):
+class Boarding(Object):
     def __init__(self, board_type, pos_x, pos_y):
-        super().__init__(board_group, all_sprites)
+        super().__init__(damageable_group, all_sprites)
+        # self.strength = 300
         self.image = board_images[board_type]
         board_width = board_height = 0
         board_width = 4
@@ -553,11 +573,12 @@ class Boarding(pygame.sprite.Sprite):
                                                tile_height * pos_y - board_height)
 
 
-class Player(pygame.sprite.Sprite):
+class Player(Object):
     def __init__(self, num, pos_x, pos_y):
         super().__init__(player_group, all_sprites)
 
         self.num = num
+        self.level = 1
         self.angle = 0
         self.moving = False
 
@@ -581,14 +602,19 @@ class Player(pygame.sprite.Sprite):
 
         self.rect = self.rect.move(delta_x, delta_y)
 
-        condition = (pygame.sprite.spritecollide(self, building_group, False) or
-                     pygame.sprite.spritecollide(self, board_group, False))
+        res = pygame.sprite.spritecollide(self, damageable_group, False)
+        for obj in res:
+            obj.damage(TANK_DAMAGE[self.level])
+
+        condition = (pygame.sprite.spritecollideany(self, solid_group, False) or
+                     pygame.sprite.spritecollideany(self, damageable_group, False))
         if self.num == 1 and PLAYRSCOUNT == 2:
             condition = condition or pygame.sprite.collide_rect(self, player_two)
         elif self.num == 2:
             condition = condition or pygame.sprite.collide_rect(self, player_one)
         if condition:
             self.rect = self.rect.move(-delta_x, -delta_y)
+            self.moving = False
         self.update_image()
 
     def update_image(self):
