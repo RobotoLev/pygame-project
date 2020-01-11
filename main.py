@@ -2,14 +2,13 @@ import random
 import pygame
 from source.system_functions import load_image, terminate, load_level
 
-
 FPS = 30
 WIDTH = 1072
 HEIGHT = 603
 MENUBTTNS = [None for _ in range(4)]
 MODEBTTNS = [None for _ in range(4)]
+STNGBTTNS = [None for _ in range(4)]
 PLAYRSCOUNT = 0
-
 
 # Включить, когда будет объект игрока с координатами
 # UPD. Включение откладывается, т.к. есть новая версия
@@ -52,7 +51,7 @@ PLAYRSCOUNT = 0
 player_one = None
 player_two = None
 VELOCITY = 2
-
+VOLUME = 50
 WASDBTTNS = [pygame.K_w, pygame.K_s, pygame.K_a, pygame.K_d, pygame.K_LSHIFT]
 ARRWBTTNS = [pygame.K_UP, pygame.K_DOWN, pygame.K_LEFT, pygame.K_RIGHT, pygame.K_SPACE]
 PLAYRSKEYS = [WASDBTTNS, ARRWBTTNS]
@@ -73,6 +72,56 @@ clock = pygame.time.Clock()
 
 running = True
 iteration = 0
+
+
+def settings(chosed=None, moved=None):
+    screen.fill((0, 0, 0))
+    font = pygame.font.Font(None, 50)
+    texts = ['1 игрок', '2 игрока', 'Громкость', 'НАЗАД']
+    for i in range(4):
+        cr = (100, 255, 100)
+        width = 1
+        if chosed == i == 3:
+            cr = (100, 175, 100)
+            width = 2
+        elif moved == i == 3:
+            cr = (170, 255, 170)
+
+        text = font.render(texts[i], 1, cr)
+        text_h = text.get_height()
+        text_w = text.get_width()
+        text_y = HEIGHT // 5 * (i + 1) - text_h // 2
+        if i != 3:
+            text_x = WIDTH // 8 - text_w // 2
+        else:
+            text_x = WIDTH // 2 - text_w // 2
+        screen.blit(text, (text_x, text_y))
+        if i != 3:
+            text_x = WIDTH // 3 * 2
+            text_w = WIDTH // 4
+        pygame.draw.rect(screen, (0, 255, 0), (text_x - 10 - width // 2, text_y - 10 - width // 2,
+                                               text_w + 20, text_h + 20), width)
+        if i == 2:
+            pygame.draw.rect(screen, (0, 255, 0), (text_x - 10 - width // 2, text_y - 10 - width // 2,
+                                                   (text_w + 20) * (VOLUME / 100), text_h + 20))
+            vol = font.render(str(VOLUME), 1, cr)
+            screen.blit(vol, (text_x + 10 - width // 2 + text_w, text_y - 10 - width // 2))
+        elif i == 0:
+            if PLAYRSKEYS[0] == WASDBTTNS:
+                screen.blit(load_image('WASD_picture.png'), (text_x - 10 - width // 2,
+                                                             text_y - 10 - width // 2))
+            else:
+                screen.blit(load_image('Arrs_picture.png'), (text_x - 10 - width // 2,
+                                                             text_y - 10 - width // 2))
+        elif i == 1:
+            if PLAYRSKEYS[1] == WASDBTTNS:
+                screen.blit(load_image('WASD_picture.png'), (text_x - 10 - width // 2,
+                                                             text_y - 10 - width // 2))
+            else:
+                screen.blit(load_image('Arrs_picture.png'), (text_x - 10 - width // 2,
+                                                             text_y - 10 - width // 2))
+        STNGBTTNS[i] = (((text_x - 10 - width // 2, text_y - 10 - width // 2,
+                          text_w + 20, text_h + 20)), cr)
 
 
 def choose_mode(chosed=None, moved=None):
@@ -185,7 +234,65 @@ def start_screen():
 
 
 def settings_screen():
-    pass
+    flag = None
+    global VOLUME
+    settings()
+    in_menu = True
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                x, y = event.pos
+                btn = what_is_pressed(STNGBTTNS, (x, y))
+                if btn == 3:
+                    flag = start_screen
+                elif btn == 2:
+                    flag = 2
+                elif btn == 1:
+                    flag = 1
+                elif btn == 0:
+                    flag = 0
+                settings(btn)
+            elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+                if flag is not None:
+                    iter = what_is_pressed(STNGBTTNS, event.pos)
+                    if iter == btn:
+                        if iter == 3:
+                            in_menu = False
+                            break
+                        elif iter == 0:
+                            if PLAYRSKEYS[0] == WASDBTTNS:
+                                PLAYRSKEYS[0] = ARRWBTTNS
+                            else:
+                                PLAYRSKEYS[0] = WASDBTTNS
+                        elif iter == 1:
+                            if PLAYRSKEYS[1] == WASDBTTNS:
+                                PLAYRSKEYS[1] = ARRWBTTNS
+                            else:
+                                PLAYRSKEYS[1] = WASDBTTNS
+                    else:
+                        flag = None
+                    settings()
+            elif event.type == pygame.MOUSEMOTION:
+                butn = what_is_pressed(STNGBTTNS, event.pos)
+                if 1 in event.buttons:
+                    x, y = event.pos
+                    if flag == 2:
+                        VOLUME = int(((x - STNGBTTNS[2][0][0]) * 100 / STNGBTTNS[2][0][2]))
+                        if VOLUME > 100:
+                            VOLUME = 100
+                        elif VOLUME < 0:
+                            VOLUME = 0
+                    settings(btn, butn)
+                else:
+                    settings(moved=butn)
+        if not in_menu:
+            break
+
+        pygame.display.flip()
+        clock.tick(FPS)
+    flag()
 
 
 def continue_screen():
