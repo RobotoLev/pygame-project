@@ -365,12 +365,12 @@ def generate_level(level):
                 Tile('wall', (x - 1) // 2, (y - 1) // 2)
             elif level[y][x] == 'G':
                 Tile('empty', (x - 1) // 2, (y - 1) // 2)
-                player_one = Player((x - 1) // 2, (y - 1) // 2)
+                player_one = Player(1, (x - 1) // 2, (y - 1) // 2)
                 # green_spawn = ((x - 1) // 2, (y - 1) // 2)
             elif level[y][x] == 'R':
                 Tile('empty', (x - 1) // 2, (y - 1) // 2)
                 if PLAYRSCOUNT == 2:
-                    player_two = Player((x - 1) // 2, (y - 1) // 2)
+                    player_two = Player(2, (x - 1) // 2, (y - 1) // 2)
                     # red_spawn = ((x - 1) // 2, (y - 1) // 2)
             elif level[y][x] == 'E':
                 Tile('empty', (x - 1) // 2, (y - 1) // 2)
@@ -453,7 +453,9 @@ def game():
 
 tile_images = {'empty': load_image('grass.png'), 'wall': load_image('box.png')}
 board_images = {'horiz': load_image('board_horizontal.png'), 'verti': load_image('board_vertical.png')}
-player_image = load_image('tank_green_mk1.png')
+# player_image = load_image('tank_green_mk1.png')
+player_one_images = [load_image('tanks\\tank_green_mk1_{}.png'.format(i)) for i in range(4)]
+player_two_images = [load_image('tanks\\tank_red_mk1_{}.png'.format(i)) for i in range(4)]
 building_images = {'rt': load_image('building_right-top.png'),
                    'lt': load_image('building_left-top.png'),
                    'rb': load_image('building_right-bot.png'),
@@ -497,13 +499,15 @@ class Boarding(pygame.sprite.Sprite):
 
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, pos_x, pos_y):
+    def __init__(self, num, pos_x, pos_y):
         super().__init__(player_group, all_sprites)
-        self.image = player_image
-        self.rect = self.image.get_rect().move(tile_width * pos_x, tile_height * pos_y)
 
+        self.num = num
         self.angle = 0
         self.moving = False
+
+        self.update_image()
+        self.rect = self.image.get_rect().move(tile_width * pos_x, tile_height * pos_y)
 
     def update(self):
         if not self.moving:
@@ -521,6 +525,14 @@ class Player(pygame.sprite.Sprite):
             delta_x -= VELOCITY
 
         self.rect = self.rect.move(delta_x, delta_y)
+        self.update_image()
+
+    def update_image(self):
+        if self.num == 1:
+            images = player_one_images
+        else:
+            images = player_two_images
+        self.image = images[self.angle]
 
 
 start_screen()
