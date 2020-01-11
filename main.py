@@ -10,44 +10,7 @@ MODEBTTNS = [None for _ in range(4)]
 STNGBTTNS = [None for _ in range(4)]
 PLAYRSCOUNT = 0
 
-# Включить, когда будет объект игрока с координатами
-# UPD. Включение откладывается, т.к. есть новая версия
-#
-# def move_player(player, delta_x, delta_y):
-#     print("Привет")
-#     if player is not None:
-#         print("Привет еще раз")
-#         player.rect = player.image.get_rect().move(delta_x, delta_y)
 
-# Вторая версия функции
-# Закоментированно по ненадобности
-#
-# def move_player(key):
-#     global PLAYRSKEYS, KEYBTTNS, player_one, player_two
-#
-#     if key in PLAYRSKEYS["player_one"]:
-#         player = player_one
-#     else:
-#         if PLAYRSCOUNT == 2:
-#             player = player_two
-#         else:
-#             return
-#
-#     delta_x = 0
-#     delta_y = 0
-#     if key in {119, 273}:
-#         delta_y -= VELOCITY
-#     elif key in {97, 276}:
-#         delta_x -= VELOCITY
-#     elif key in {115, 274}:
-#         delta_y += VELOCITY
-#     else:
-#         delta_x += VELOCITY
-#
-#     player.rect = player.rect.move(delta_x, delta_y)
-
-
-# Объект игрока и константа его скорости
 player_one = None
 player_two = None
 VELOCITY = 2
@@ -56,14 +19,6 @@ WASDBTTNS = [pygame.K_w, pygame.K_s, pygame.K_a, pygame.K_d, pygame.K_LSHIFT]
 ARRWBTTNS = [pygame.K_UP, pygame.K_DOWN, pygame.K_LEFT, pygame.K_RIGHT, pygame.K_SPACE]
 PLAYRSKEYS = [WASDBTTNS, ARRWBTTNS]
 ANGLES = {0: 0, 1: 2, 2: 3, 3: 1}
-# KEYBTTNS = {119: move_player,
-#             97: move_player,
-#             115: move_player,
-#             100: move_player,
-#             273: move_player,
-#             276: move_player,
-#             274: move_player,
-#             275: move_player}
 
 
 pygame.init()
@@ -76,7 +31,6 @@ iteration = 0
 
 def pause(chosed=None, moved=None):
     screen.fill((0, 0, 0))
-    #screen.fill((0, 0, 0))
     all_sprites.draw(screen)
     image = pygame.Surface([WIDTH // 3, HEIGHT])
     image.fill(pygame.Color("black"))
@@ -101,6 +55,7 @@ def pause(chosed=None, moved=None):
                                                text_w + 20 - width // 2, text_h + 20), width)
         MENUBTTNS[i] = ((text_x - 10 - width // 2, text_y - 10,
                          text_w + 20 - width // 2, text_h + 20), cr)
+
 
 def settings(chosed=None, moved=None):
     screen.fill((0, 0, 0))
@@ -130,7 +85,8 @@ def settings(chosed=None, moved=None):
         pygame.draw.rect(screen, (0, 255, 0), (text_x - 10 - width // 2, text_y - 10 - width // 2,
                                                text_w + 20, text_h + 20), width)
         if i == 2:
-            pygame.draw.rect(screen, (0, 255, 0), (text_x - 10 - width // 2, text_y - 10 - width // 2,
+            pygame.draw.rect(screen, (0, 255, 0), (text_x - 10 - width // 2,
+                                                   text_y - 10 - width // 2,
                                                    (text_w + 20) * (VOLUME / 100), text_h + 20))
             vol = font.render(str(VOLUME), 1, cr)
             screen.blit(vol, (text_x + 10 - width // 2 + text_w, text_y - 10 - width // 2))
@@ -488,6 +444,13 @@ def generate_level(level):
 def game():
     print('Game has been started')
     in_game = True
+
+    all_sprites.empty()
+    tile_group.empty()
+    board_group.empty()
+    player_group.empty()
+    building_group.empty()
+
     level = load_level('level1.txt')
     generate_level(level)
     while True:
@@ -502,8 +465,6 @@ def game():
                         in_game = False
                         break
                 print("Pressed", key)
-                # if key in KEYBTTNS:
-                #     KEYBTTNS[key](key)
                 for num, keys in enumerate(PLAYRSKEYS):
                     if key not in keys:
                         continue
@@ -541,8 +502,8 @@ def game():
 
 
 tile_images = {'empty': load_image('grass.png'), 'wall': load_image('box.png')}
-board_images = {'horiz': load_image('board_horizontal.png'), 'verti': load_image('board_vertical.png')}
-# player_image = load_image('tank_green_mk1.png')
+board_images = {'horiz': load_image('board_horizontal.png'),
+                'verti': load_image('board_vertical.png')}
 player_one_images = [load_image('tanks\\tank_green_mk1_{}.png'.format(i)) for i in range(4)]
 player_two_images = [load_image('tanks\\tank_red_mk1_{}.png'.format(i)) for i in range(4)]
 building_images = {'rt': load_image('building_right-top.png'),
@@ -584,7 +545,8 @@ class Boarding(pygame.sprite.Sprite):
         board_width = board_height = 0
         board_width = 4
         board_height = 4
-        self.rect = self.image.get_rect().move(tile_width * pos_x - board_width, tile_height * pos_y - board_height)
+        self.rect = self.image.get_rect().move(tile_width * pos_x - board_width,
+                                               tile_height * pos_y - board_height)
 
 
 class Player(pygame.sprite.Sprite):
