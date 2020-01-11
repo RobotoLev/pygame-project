@@ -522,8 +522,10 @@ tile_images = {'empty': load_image('grass.png'),
                'ver_rail': load_image('vertical_rails.png'),
                'ver_rail_te': load_image('vertical_rails_top_end.png'),
                'ver_rail_be': load_image('vertical_rails_bot_end.png')}
-board_images = {'horiz': load_image('board_horizontal.png'),
-                'verti': load_image('board_vertical.png')}
+board_images = {'horiz': [load_image('board_horizontal.png'),
+                          load_image('board_horizontal_damaged.png')],
+                'verti': [load_image('board_vertical.png'),
+                          load_image('board_vertical_damaged.png')]}
 player_one_images = [load_image('tanks\\tank_green_mk1_{}.png'.format(i)) for i in range(4)]
 player_two_images = [load_image('tanks\\tank_red_mk1_{}.png'.format(i)) for i in range(4)]
 # building_images = {'rt': load_image('building_right-top.png'),
@@ -560,6 +562,8 @@ class Object(pygame.sprite.Sprite):
     def __init__(self, *groups):
         super().__init__(list(groups) + [object_group])
         self.strength = 1000
+        self.image = None
+        self.images = []
 
     def damage(self, damage_level):
         self.strength -= damage_level
@@ -567,6 +571,10 @@ class Object(pygame.sprite.Sprite):
     def update(self):
         if self.strength <= 0:
             self.kill()
+
+        for image in self.images:
+            if image[0] <= self.strength <= image[1]:
+                self.image = image[2]
 
         # Сюда можно подцепить подмену изображений с уменьшением прочности
         # (забор трескается)
@@ -584,7 +592,9 @@ class Boarding(Object):
     def __init__(self, board_type, pos_x, pos_y):
         super().__init__(damageable_group, all_sprites)
         # self.strength = 300
-        self.image = board_images[board_type]
+        self.images = [[1, 500, board_images[board_type][1]],
+                       [501, 1000, board_images[board_type][0]]]
+        self.image = board_images[board_type][0]
         board_width = board_height = 0
         board_width = 4
         board_height = 4
