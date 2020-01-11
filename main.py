@@ -316,7 +316,11 @@ def game():
                     if num == 0:
                         player = player_one
                     else:
-                        player = player_two
+                        if PLAYRSCOUNT == 2:
+                            player = player_two
+                        else:
+                            continue
+
                     idx = keys.index(key)
                     if idx != 4:
                         player.moving = True
@@ -326,7 +330,7 @@ def game():
                 if (key in PLAYRSKEYS[0] and
                         (PLAYRSKEYS[0].index(key), player_one.angle) in list(ANGLES.items())):
                     player_one.moving = False
-                if (key in PLAYRSKEYS[1] and
+                if (key in PLAYRSKEYS[1] and PLAYRSCOUNT == 2 and
                         (PLAYRSKEYS[1].index(key), player_two.angle) in list(ANGLES.items())):
                     player_two.moving = False
 
