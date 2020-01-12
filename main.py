@@ -13,7 +13,7 @@ PLAYRSCOUNT = 0
 
 player_one = None
 player_two = None
-VELOCITY = 5
+VELOCITY = 4
 VOLUME = 50
 WASDBTTNS = [pygame.K_w, pygame.K_s, pygame.K_a, pygame.K_d, pygame.K_LSHIFT]
 ARRWBTTNS = [pygame.K_UP, pygame.K_DOWN, pygame.K_LEFT, pygame.K_RIGHT, pygame.K_SPACE]
@@ -23,7 +23,6 @@ ANGLES = {0: 0, 1: 2, 2: 3, 3: 1}
 TANK_DAMAGE = [None, 400, 400, 500]
 SHOT_DAMAGE = [None, 100, 200, 500]
 SHOT_VELOCITY = 5
-
 
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -424,6 +423,16 @@ def generate_level(level):
                 Tile('ver_rail_be', (x - 1) // 2, (y - 1) // 2)
             elif level[y][x] == '8':
                 Tile('ver_rail_te', (x - 1) // 2, (y - 1) // 2)
+            elif level[y][x] == '4':
+                Tile('hor_rail_le', (x - 1) // 2, (y - 1) // 2)
+            elif level[y][x] == '6':
+                Tile('hor_rail_re', (x - 1) // 2, (y - 1) // 2)
+            elif level[y][x] == 'W':
+                Tile('ver_rail', (x - 1) // 2, (y - 1) // 2)
+                Train('verti', (x - 1) // 2, (y - 1) // 2)
+            elif level[y][x] == 'A':
+                Tile('hor_rail', (x - 1) // 2, (y - 1) // 2)
+                Train('horiz', (x - 1) // 2, (y - 1) // 2)
             # elif level[y][x] == '9':
             #     Building('rt', (x - 1) // 2, (y - 1) // 2)
             # elif level[y][x] == '7':
@@ -507,6 +516,7 @@ def game():
 
         screen.fill(pygame.Color('black'))
         all_sprites.draw(screen)
+        damageable_group.draw(screen)
         player_group.draw(screen)
         pygame.display.flip()
 
@@ -526,6 +536,10 @@ board_images = {'horiz': [load_image('board_horizontal.png'),
                           load_image('board_horizontal_damaged.png')],
                 'verti': [load_image('board_vertical.png'),
                           load_image('board_vertical_damaged.png')]}
+train_images = {'horiz': [load_image('horizontal_train.png'),
+                          load_image('horizontal_train_damaged.png')],
+                'verti': [load_image('vertical_train.png'),
+                          load_image('vertical_train_damaged.png')]}
 player_one_images = [load_image('tanks\\tank_green_mk1_{}.png'.format(i)) for i in range(4)]
 player_two_images = [load_image('tanks\\tank_red_mk1_{}.png'.format(i)) for i in range(4)]
 # building_images = {'rt': load_image('building_right-top.png'),
@@ -591,15 +605,28 @@ class Building(Object):
 class Boarding(Object):
     def __init__(self, board_type, pos_x, pos_y):
         super().__init__(damageable_group, all_sprites)
-        # self.strength = 300
-        self.images = [[1, 500, board_images[board_type][1]],
-                       [501, 1000, board_images[board_type][0]]]
+        self.strength = 600
+        self.images = [[1, 300, board_images[board_type][1]],
+                       [301, 600, board_images[board_type][0]]]
         self.image = board_images[board_type][0]
         board_width = board_height = 0
         board_width = 4
         board_height = 4
         self.rect = self.image.get_rect().move(tile_width * pos_x - board_width,
                                                tile_height * pos_y - board_height)
+
+class Train(Object):
+    def __init__(self, train_type, pos_x, pos_y):
+        super().__init__(damageable_group, all_sprites)
+        self.strength = 800
+        self.images = [[1, 400, train_images[train_type][1]],
+                       [401, 800, train_images[train_type][0]]]
+        self.image = train_images[train_type][0]
+
+        board_width = 2
+        board_height = 2
+        self.rect = self.image.get_rect().move(tile_width * pos_x + board_width,
+                                               tile_height * pos_y + board_height)
 
 
 class Player(Object):
@@ -698,5 +725,5 @@ class Shot(pygame.sprite.Sprite):
         self.kill()
 
 
-start_screen()
+game()
 pygame.quit()
