@@ -35,6 +35,8 @@ iteration = 0
 def pause(chosed=None, moved=None):
     screen.fill((0, 0, 0))
     all_sprites.draw(screen)
+    damageable_group.draw(screen)
+    player_group.draw(screen)
     image = pygame.Surface([WIDTH // 3, HEIGHT])
     image.fill(pygame.Color("black"))
     screen.blit(image, (WIDTH // 3, 0))
@@ -752,7 +754,7 @@ class ShotEnd(AnimatedSprite):
 
         self.cadres = 1
         self.lifetime = 1
-        self.delay = 10
+        self.delay = 4
 
     def kill(self):
         self.res.damage(SHOT_DAMAGE[self.level])
