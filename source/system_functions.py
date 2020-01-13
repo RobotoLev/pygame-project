@@ -27,6 +27,15 @@ def load_image(name, colorkey=None):
 
     return image
 
+
+def rotate_image(image, angle):
+    rot_image = pygame.transform.rotate(image, angle)
+    rot_rect = image.get_rect().copy()
+    rot_rect.center = rot_image.get_rect().center
+    rot_image = rot_image.subsurface(rot_rect).copy()
+    return rot_image
+
+
 def load_level(filename):
     filename = "data/levels/" + filename
     # читаем уровень, убирая символы перевода строки

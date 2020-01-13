@@ -1,6 +1,6 @@
 import random
 import pygame
-from source.system_functions import load_image, terminate, load_level
+from source.system_functions import terminate, load_image, rotate_image, load_level
 
 FPS = 30
 WIDTH = 1072
@@ -471,6 +471,7 @@ def game():
     player_group.empty()
     solid_group.empty()
     damageable_group.empty()
+    temporary_group.empty()
 
     level = load_level('level1.txt')
     generate_level(level)
@@ -515,11 +516,13 @@ def game():
             break
 
         screen.fill(pygame.Color('black'))
-        all_sprites.draw(screen)
-        damageable_group.draw(screen)
+        tile_group.draw(screen)
         player_group.draw(screen)
-        pygame.display.flip()
+        temporary_group.draw(screen)
+        solid_group.draw(screen)
+        damageable_group.draw(screen)
 
+        pygame.display.flip()
         all_sprites.update()
         clock.tick(FPS)
     res()
@@ -553,6 +556,16 @@ player_two_images = [load_image('tanks\\tank_red_mk1_{}.png'.format(i)) for i in
 #                    'center': load_image('building_center.png'),
 #                    'wall': load_image('box.png')}
 building_images = {'wall': load_image('box.png')}
+shot_start_images = [
+    [rotate_image(load_image('shot_start_{}.png'.format(i + 1)), 90) for i in range(4)],
+    [load_image('shot_start_{}.png'.format(i + 1))  for i in range(4)],
+    [rotate_image(load_image('shot_start_{}.png'.format(i + 1)), 270) for i in range(4)],
+    [rotate_image(load_image('shot_start_{}.png'.format(i + 1)), 180) for i in range(4)]]
+shot_end_images = [
+    [rotate_image(load_image('shot_end_{}.png'.format(i + 1)), 90) for i in range(4)],
+    [load_image('shot_end_{}.png'.format(i + 1))  for i in range(4)],
+    [rotate_image(load_image('shot_end_{}.png'.format(i + 1)), 270) for i in range(4)],
+    [rotate_image(load_image('shot_end_{}.png'.format(i + 1)), 180) for i in range(4)]]
 # группы спрайтов
 tile_width, tile_height = 50, 50
 
@@ -563,6 +576,7 @@ player_group = pygame.sprite.Group()
 object_group = pygame.sprite.Group()
 damageable_group = pygame.sprite.Group()
 solid_group = pygame.sprite.Group()
+temporary_group = pygame.sprite.Group()
 
 
 class Tile(pygame.sprite.Sprite):
@@ -614,6 +628,7 @@ class Boarding(Object):
         board_height = 4
         self.rect = self.image.get_rect().move(tile_width * pos_x - board_width,
                                                tile_height * pos_y - board_height)
+
 
 class Train(Object):
     def __init__(self, train_type, pos_x, pos_y):
@@ -684,23 +699,83 @@ class Player(Object):
         Shot(self.rect.x, self.rect.y, self.angle, self.level)
 
 
+class AnimatedSprite(pygame.sprite.Sprite):
+    def __init__(self, *groups):
+        super().__init__(list(groups))
+
+        self.images = []
+        self.cur_image = -1
+        self.cadres = 1
+        self.delay = 0
+        self.lifetime = float("inf")
+
+        self.image = None
+        self.rect = None
+
+    def update(self):
+        if self.delay > 0:
+            self.delay -= 1
+            return
+
+        if self.lifetime == 0:
+            self.kill()
+            return
+
+        self.cur_image = (self.cur_image + 1) % (len(self.images) * self.cadres)
+        self.image = self.images[self.cur_image // self.cadres]
+
+        if self not in temporary_group.sprites():
+            temporary_group.add(self)
+
+        if self.cur_image == len(self.images) * self.cadres - 1:
+            self.lifetime -= 1
+
+
+class ShotStart(AnimatedSprite):
+    def __init__(self, pos_x, pos_y, angle):
+        super().__init__(all_sprites)
+        self.images = shot_start_images[angle]
+        self.rect = pygame.Rect(pos_x, pos_y, 48, 48)
+
+        self.cadres = 1
+        self.lifetime = 1
+
+
+class ShotEnd(AnimatedSprite):
+    def __init__(self, pos_x, pos_y, angle, res, level):
+        super().__init__(all_sprites)
+        self.images = shot_end_images[angle]
+        self.rect = pygame.Rect(pos_x, pos_y, 48, 48)
+
+        self.res = res
+        self.level = level
+
+        self.cadres = 1
+        self.lifetime = 1
+        self.delay = 10
+
+    def kill(self):
+        self.res.damage(SHOT_DAMAGE[self.level])
+        super().kill()
+
+
 class Shot(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y, angle, level):
-        super().__init__(all_sprites)
+        super().__init__(all_sprites, temporary_group)
         self.angle = angle
 
         if angle == 0:
-            self.x = pos_x + tile_width / 2 - 1
+            self.x = pos_x + 23
             self.y = pos_y
         elif angle == 1:
-            self.x = pos_x + tile_width
-            self.y = pos_y + tile_height / 2 - 1
+            self.x = pos_x + 48
+            self.y = pos_y + 23
         elif angle == 2:
-            self.x = pos_x + tile_width / 2 - 1
-            self.y = pos_y + tile_height
+            self.x = pos_x + 23
+            self.y = pos_y + 48
         else:
             self.x = pos_x
-            self.y = pos_y + tile_height / 2 - 1
+            self.y = pos_y + 23
         self.rect = pygame.Rect(self.x, self.y, 4, 4)
 
         start = True
@@ -720,8 +795,34 @@ class Shot(pygame.sprite.Sprite):
             self.rect = self.rect.move(delta_x, delta_y)
 
         res = pygame.sprite.spritecollideany(self, object_group)
-        res.damage(SHOT_DAMAGE[level])
+        print(res)
 
+        x = pos_x
+        y = pos_y
+        if angle == 0:
+            y -= 48
+        elif angle == 1:
+            x += 48
+        elif angle == 2:
+            y += 48
+        else:
+            x -= 48
+        ShotStart(x, y, self.angle)
+
+        if angle == 0:
+            x = self.rect.x - 22
+            y = res.rect.y + res.rect.height
+        elif angle == 1:
+            x = res.rect.x - 48
+            y = self.rect.y - 22
+        elif angle == 2:
+            x = self.rect.x - 22
+            y = res.rect.y - 48
+        else:
+            x = res.rect.x + res.rect.width
+            y = self.rect.y - 22
+
+        ShotEnd(x, y, self.angle, res, level)
         self.kill()
 
 
