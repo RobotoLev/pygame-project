@@ -646,6 +646,11 @@ class Train(Object):
                                                tile_height * pos_y + board_height)
 
 
+class Tree(Object):
+    def __init__(self, train_type, pos_x, pos_y):
+        super().__init__(damageable_group, all_sprites)
+        self.strength = 300
+
 class Player(Object):
     def __init__(self, num, pos_x, pos_y):
         super().__init__(player_group, all_sprites)
@@ -827,6 +832,6 @@ class Shot(pygame.sprite.Sprite):
         ShotEnd(x, y, self.angle, res, level)
         self.kill()
 
-
-game()
+start_screen()
+#game()
 pygame.quit()
