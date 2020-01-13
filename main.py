@@ -25,6 +25,8 @@ SHOT_DAMAGE = [None, 100, 200, 500]
 SHOT_VELOCITY = 5
 
 pygame.init()
+tank_shot = pygame.mixer.Sound('data/Sounds/tank_shot.wav')
+sounds = list()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 clock = pygame.time.Clock()
 
@@ -326,6 +328,9 @@ def settings_screen(on_pause=False):
                             VOLUME = 100
                         elif VOLUME < 0:
                             VOLUME = 0
+                        tank_shot.set_volume(VOLUME / 100)
+                        for i in sounds:
+                            i.set_volume(VOLUME / 100)
                     settings(btn, butn)
                 else:
                     settings(moved=butn)
@@ -403,6 +408,8 @@ def generate_level(level):
         for x in range(1, len(level[y]), 2):
             if level[y][x] == '.':
                 Tile('empty', (x - 1) // 2, (y - 1) // 2)
+                if random.randint(1, 10) == 1:
+                    Tree('default', (x - 1) // 2, (y - 1) // 2)
             elif level[y][x] == '#':
                 Building('wall', (x - 1) // 2, (y - 1) // 2)
             elif level[y][x] == 'G':
@@ -435,24 +442,9 @@ def generate_level(level):
             elif level[y][x] == 'A':
                 Tile('hor_rail', (x - 1) // 2, (y - 1) // 2)
                 Train('horiz', (x - 1) // 2, (y - 1) // 2)
-            # elif level[y][x] == '9':
-            #     Building('rt', (x - 1) // 2, (y - 1) // 2)
-            # elif level[y][x] == '7':
-            #     Building('lt', (x - 1) // 2, (y - 1) // 2)
-            # elif level[y][x] == '1':
-            #     Building('lb', (x - 1) // 2, (y - 1) // 2)
-            # elif level[y][x] == '3':
-            #     Building('rb', (x - 1) // 2, (y - 1) // 2)
-            # elif level[y][x] == '8':
-            #     Building('mt', (x - 1) // 2, (y - 1) // 2)
-            # elif level[y][x] == '6':
-            #     Building('mr', (x - 1) // 2, (y - 1) // 2)
-            # elif level[y][x] == '2':
-            #     Building('mb', (x - 1) // 2, (y - 1) // 2)
-            # elif level[y][x] == '4':
-            #     Building('ml', (x - 1) // 2, (y - 1) // 2)
-            # elif level[y][x] == '5':
-            #     Building('center', (x - 1) // 2, (y - 1) // 2)
+            elif level[y][x] == 'T':
+                Tile('empty', (x - 1) // 2, (y - 1) // 2)
+                Tree('default', (x - 1) // 2, (y - 1) // 2)
     for y in range(1, len(level), 2):
         for x in range(0, len(level[y]), 2):
             if level[y][x] == 'V':
@@ -545,6 +537,10 @@ train_images = {'horiz': [load_image('horizontal_train.png'),
                           load_image('horizontal_train_damaged.png')],
                 'verti': [load_image('vertical_train.png'),
                           load_image('vertical_train_damaged.png')]}
+tree_images = {'default': [load_image('trees\\tree_default_0.png'),
+                           load_image('trees\\tree_default_1.png'),
+                           load_image('trees\\tree_default_2.png'),
+                           load_image('trees\\tree_default_3.png')]}
 player_one_images = [load_image('tanks\\tank_green_mk1_{}.png'.format(i)) for i in range(4)]
 player_two_images = [load_image('tanks\\tank_red_mk1_{}.png'.format(i)) for i in range(4)]
 # building_images = {'rt': load_image('building_right-top.png'),
@@ -593,10 +589,15 @@ class Object(pygame.sprite.Sprite):
         super().__init__(list(groups) + [object_group])
         self.strength = 1000
         self.image = None
+        self.fireable = False
+        self.is_fired = False
         self.images = []
 
-    def damage(self, damage_level):
+    def damage(self, damage_level, shot=False):
         self.strength -= damage_level
+        if shot and self.fireable:
+            self.is_fired = True
+            self.fire_damage = 1
 
     def update(self):
         if self.strength <= 0:
@@ -605,6 +606,11 @@ class Object(pygame.sprite.Sprite):
         for image in self.images:
             if image[0] <= self.strength <= image[1]:
                 self.image = image[2]
+
+        if self.is_fired:
+            self.strength -= self.fire_damage
+            if random.randint(1, 8) == 1 and self.fire_damage <= 5:
+                self.fire_damage += 1
 
         # Сюда можно подцепить подмену изображений с уменьшением прочности
         # (забор трескается)
@@ -647,9 +653,21 @@ class Train(Object):
 
 
 class Tree(Object):
-    def __init__(self, train_type, pos_x, pos_y):
+    def __init__(self, tree_type, pos_x, pos_y):
         super().__init__(damageable_group, all_sprites)
-        self.strength = 300
+        self.strength = 400
+        self.fireable = True
+        self.images = [[133, 200, tree_images[tree_type][1]],
+                       [201, 400, tree_images[tree_type][0]],
+                       [66, 132, tree_images[tree_type][2]],
+                       [0, 65, tree_images[tree_type][3]]]
+        self.image = tree_images[tree_type][0]
+        board_width = random.randint(1, 35)
+        board_height = random.randint(1, 35)
+        self.rect = self.image.get_rect().move(tile_width * pos_x + board_width,
+                                               tile_height * pos_y + board_height)
+
+
 
 class Player(Object):
     def __init__(self, num, pos_x, pos_y):
@@ -743,7 +761,7 @@ class ShotStart(AnimatedSprite):
         super().__init__(all_sprites)
         self.images = shot_start_images[angle]
         self.rect = pygame.Rect(pos_x, pos_y, 48, 48)
-
+        tank_shot.play()
         self.cadres = 1
         self.lifetime = 1
 
@@ -754,6 +772,7 @@ class ShotEnd(AnimatedSprite):
         self.images = shot_end_images[angle]
         self.rect = pygame.Rect(pos_x, pos_y, 48, 48)
 
+
         self.res = res
         self.level = level
 
@@ -762,7 +781,7 @@ class ShotEnd(AnimatedSprite):
         self.delay = 4
 
     def kill(self):
-        self.res.damage(SHOT_DAMAGE[self.level])
+        self.res.damage(SHOT_DAMAGE[self.level], True)
         super().kill()
 
 
