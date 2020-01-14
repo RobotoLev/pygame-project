@@ -470,10 +470,11 @@ def level_play(level='level1.txt'):
     enemy_damageable_group.empty()
     temporary_group.empty()
 
-    level, enemies = load_level(level)
+    level, enemies_count = load_level(level)
+    print(enemies_count)
+    green, red, enemies = generate_level(level)
+    enemies = list(map(lambda x: [*x, random.randint(0, 30)], enemies))
     print(enemies)
-    generate_level(level)
-    Enemy(3, 3)
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -513,6 +514,11 @@ def level_play(level='level1.txt'):
                     player_two.moving = False
         if not in_game:
             break
+        for i in enemies:
+            if i[2] >= 60 and random.randint(1, 8) == 1:
+                Enemy(i[0], i[1])
+                i[2] = -1
+            i[2] += 1
 
         screen.fill(pygame.Color('black'))
         tile_group.draw(screen)
@@ -522,7 +528,7 @@ def level_play(level='level1.txt'):
         enemy_damageable_group.draw(screen)
         temporary_group.draw(screen)
         solid_group.draw(screen)
-        if enemies == 0:
+        if enemies_count == 0:
             return
 
         pygame.display.flip()
