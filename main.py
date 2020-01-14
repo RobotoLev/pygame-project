@@ -10,7 +10,6 @@ MODEBTTNS = [None for _ in range(4)]
 STNGBTTNS = [None for _ in range(4)]
 PLAYRSCOUNT = 0
 
-
 player_one = None
 player_two = None
 VELOCITY = 4
@@ -25,6 +24,7 @@ PLAYER_SHOT_DAMAGE = [None, 100, 200, 500]
 ENEMY_DAMAGE = [None, 100, 200, 300]
 ENEMY_SHOT_DAMAGE = [None, 100, 200, 500]
 SHOT_VELOCITY = 5
+MAXDIST = 300
 
 pygame.init()
 tank_shot = pygame.mixer.Sound('data/Sounds/tank_shot.wav')
@@ -473,7 +473,7 @@ def level_play(level='level1.txt'):
     level, enemies = load_level(level)
     print(enemies)
     generate_level(level)
-    Enemy(3, 3)
+    Enemy(15, 7)
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -528,7 +528,7 @@ def level_play(level='level1.txt'):
         pygame.display.flip()
         all_sprites.update()
         clock.tick(FPS)
-    #res()
+    # res()
 
 
 def game(start_level=0):
@@ -576,12 +576,12 @@ enemy_images = [get_rotated_images('tanks\\source_tanks\\tank_enemy_mk{}.png'.fo
 building_images = {'wall': load_image('box.png')}
 shot_start_images = [
     [rotate_image(load_image('shot_start_{}.png'.format(i + 1)), 270) for i in range(4)],
-    [load_image('shot_start_{}.png'.format(i + 1))  for i in range(4)],
+    [load_image('shot_start_{}.png'.format(i + 1)) for i in range(4)],
     [rotate_image(load_image('shot_start_{}.png'.format(i + 1)), 90) for i in range(4)],
     [rotate_image(load_image('shot_start_{}.png'.format(i + 1)), 180) for i in range(4)]]
 shot_end_images = [
     [rotate_image(load_image('shot_end_{}.png'.format(i + 1)), 270) for i in range(4)],
-    [load_image('shot_end_{}.png'.format(i + 1))  for i in range(4)],
+    [load_image('shot_end_{}.png'.format(i + 1)) for i in range(4)],
     [rotate_image(load_image('shot_end_{}.png'.format(i + 1)), 90) for i in range(4)],
     [rotate_image(load_image('shot_end_{}.png'.format(i + 1)), 180) for i in range(4)]]
 # группы спрайтов
@@ -689,7 +689,6 @@ class Tree(Object):
                                                tile_height * pos_y + board_height)
 
 
-
 class Player(Object):
     def __init__(self, num, pos_x, pos_y):
         super().__init__(player_group, enemy_damageable_group, all_sprites)
@@ -723,7 +722,8 @@ class Player(Object):
 
         res = pygame.sprite.spritecollide(self, player_damageable_group, False)
         for obj in res:
-            obj.damage(PLAYER_DAMAGE[self.level])
+            if type(obj) != Enemy:
+                obj.damage(PLAYER_DAMAGE[self.level])
 
         condition = (pygame.sprite.spritecollideany(self, solid_group, False) or
                      pygame.sprite.spritecollideany(self, player_damageable_group, False) or
@@ -750,14 +750,57 @@ class Enemy(Object):
 
         self.level = 1
         self.angle = 0
-        self.moving = False
         self.is_update_images = False
+        self.moving = True
+
+        if PLAYRSCOUNT == 1:
+            self.player = player_one
+        else:
+            self.player = random.choice([player_one, player_two])
 
         self.update_image()
         self.rect = self.image.get_rect().move(tile_width * pos_x, tile_height * pos_y)
+        self.delay = 10
 
     def update(self):
         super().update()
+        self.update_image()
+        self.move()
+
+        if self.delay > 0:
+            self.delay -= 1
+            return
+        self.moving = False
+
+        if random.randint(1, 5) == 1:
+            self.delay = random.randint(10, 20)
+            return
+
+        dx, dy = self.get_dist()
+
+        angles = [0, 1, 2, 3]
+        if abs(dx) > MAXDIST:
+            if dx > 0:
+                angles.remove(1)
+            else:
+                angles.remove(3)
+
+        if abs(dy) > MAXDIST:
+            if dy > 0:
+                angles.remove(2)
+            else:
+                angles.remove(0)
+
+        self.delay = random.randint(10, 30)
+        self.angle = random.choice(angles)
+        self.moving = True
+
+    def get_dist(self):
+        dx = self.rect.x - self.player.rect.x
+        dy = self.rect.y - self.player.rect.y
+        return dx, dy
+
+    def move(self):
         if not self.moving:
             return
 
@@ -776,15 +819,14 @@ class Enemy(Object):
 
         res = pygame.sprite.spritecollide(self, enemy_damageable_group, False)
         for obj in res:
-            obj.damage(ENEMY_DAMAGE[self.level])
+            if type(obj) != Player:
+                obj.damage(ENEMY_DAMAGE[self.level])
 
         condition = (pygame.sprite.spritecollideany(self, solid_group, False) or
                      pygame.sprite.spritecollideany(self, enemy_damageable_group, False) or
                      len(pygame.sprite.spritecollide(self, enemy_group, False)) > 1)
         if condition:
             self.rect = self.rect.move(-delta_x, -delta_y)
-            self.moving = False
-        self.update_image()
 
     def update_image(self):
         images = enemy_images
@@ -929,5 +971,6 @@ class Shot(pygame.sprite.Sprite):
 
 
 start_screen()
+# PLAYRSCOUNT = 2
 # level_play()
 pygame.quit()
