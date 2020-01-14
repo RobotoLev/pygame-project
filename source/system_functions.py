@@ -29,11 +29,21 @@ def load_image(name, colorkey=None):
 
 
 def rotate_image(image, angle):
+    angle = (360 - angle) % 360
     rot_image = pygame.transform.rotate(image, angle)
     rot_rect = image.get_rect().copy()
     rot_rect.center = rot_image.get_rect().center
     rot_image = rot_image.subsurface(rot_rect).copy()
     return rot_image
+
+
+def get_rotated_images(filename, angle):
+    image = load_image(filename)
+    res = []
+    for i in range(4):
+        res.append(rotate_image(image, angle))
+        angle = (angle + 90) % 360
+    return res
 
 
 def load_level(filename):
