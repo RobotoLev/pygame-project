@@ -363,7 +363,7 @@ def choose_mode_screen():
                 elif btn == 1:
                     flag = 2
                 elif btn == 2:
-                    flag = game
+                    flag = level_play
                 else:
                     flag = start_screen
                 choose_mode(btn)
@@ -456,18 +456,20 @@ def generate_level(level):
     return green_spawnpoint, red_spawnpoint, enemies_spawnpoints
 
 
-def game():
+def level_play(level='level1.txt'):
     print('Game has been started')
     in_game = True
 
     all_sprites.empty()
     tile_group.empty()
     player_group.empty()
+    object_group.empty()
     solid_group.empty()
     damageable_group.empty()
     temporary_group.empty()
 
-    level = load_level('level1.txt')
+    level, enemies = load_level(level)
+    print(enemies)
     generate_level(level)
     while True:
         for event in pygame.event.get():
@@ -515,11 +517,19 @@ def game():
         temporary_group.draw(screen)
         solid_group.draw(screen)
         damageable_group.draw(screen)
-
+        if enemies == 0:
+            return
         pygame.display.flip()
         all_sprites.update()
         clock.tick(FPS)
-    res()
+    #res()
+
+
+def game(start_level=0):
+    level = start_level
+    while True:
+        level += 1
+        level_play(f'level{level}.txt')
 
 
 tile_images = {'empty': load_image('grass.png'),
@@ -852,5 +862,5 @@ class Shot(pygame.sprite.Sprite):
         self.kill()
 
 start_screen()
-#game()
+#level_play
 pygame.quit()
