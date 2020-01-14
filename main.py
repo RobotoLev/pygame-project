@@ -696,7 +696,6 @@ class Tree(Object):
                                                tile_height * pos_y + board_height)
 
 
-
 class Player(Object):
     def __init__(self, num, pos_x, pos_y):
         super().__init__(player_group, enemy_damageable_group, all_sprites)
@@ -773,11 +772,15 @@ class Enemy(Object):
         self.update_image()
         self.rect = self.image.get_rect().move(tile_width * pos_x, tile_height * pos_y)
         self.delay = 10
+        self.shoot_delay = 0
 
     def update(self):
         super().update()
         self.update_image()
         self.move()
+
+        self.shoot()
+        self.shoot_delay -= 1
 
         if self.delay > 0:
             self.delay -= 1
@@ -845,7 +848,9 @@ class Enemy(Object):
         self.image = images[self.level][self.angle]
 
     def shoot(self):
-        Shot(self.rect.x, self.rect.y, self.angle, self.level, False)
+        if self.shoot_delay <= 0:
+            Shot(self.rect.x, self.rect.y, self.angle, self.level, False)
+            self.shoot_delay = random.randint(30, 120)
 
 
 class AnimatedSprite(pygame.sprite.Sprite):
