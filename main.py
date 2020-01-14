@@ -697,6 +697,7 @@ class Player(Object):
         self.num = num
         self.level = 2
         self.angle = 0
+        self.delay = 0
         self.moving = False
         self.is_update_images = False
 
@@ -705,9 +706,9 @@ class Player(Object):
 
     def update(self):
         super().update()
+        self.delay -= 1
         if not self.moving:
             return
-
         delta_x = 0
         delta_y = 0
         if self.angle == 0:
@@ -741,7 +742,9 @@ class Player(Object):
         self.image = images[self.level][self.angle]
 
     def shoot(self):
-        Shot(self.rect.x, self.rect.y, self.angle, self.level, True)
+        if self.delay <= 0:
+            Shot(self.rect.x, self.rect.y, self.angle, self.level, True)
+            self.delay = 30
 
 
 class Enemy(Object):
@@ -835,8 +838,6 @@ class ShotStart(AnimatedSprite):
         self.cadres = 1
         self.lifetime = 1
 
-        tank_shot.play()
-
 
 class ShotEnd(AnimatedSprite):
     def __init__(self, pos_x, pos_y, angle, res, level, is_player):
@@ -866,6 +867,7 @@ class Shot(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y, angle, level, is_player):
         super().__init__(all_sprites, temporary_group)
         self.angle = angle
+        tank_shot.play()
 
         if angle == 0:
             self.x = pos_x + 23
