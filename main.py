@@ -471,10 +471,9 @@ def level_play(level='level1.txt'):
     temporary_group.empty()
 
     level, enemies_count = load_level(level)
-    print(enemies_count)
+    enemies_to_spawn = enemies_count
     green, red, enemies = generate_level(level)
     enemies = list(map(lambda x: [*x, random.randint(0, 30)], enemies))
-    print(enemies)
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -518,6 +517,7 @@ def level_play(level='level1.txt'):
             if i[2] >= 60 and random.randint(1, 8) == 1:
                 Enemy(i[0], i[1])
                 i[2] = -1
+                enemies_to_spawn -= 1
             i[2] += 1
 
         screen.fill(pygame.Color('black'))
