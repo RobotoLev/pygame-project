@@ -14,6 +14,8 @@ LEVELS = 2
 
 player_one = None
 player_two = None
+green_spawnpoint = None
+red_spawnpoint = None
 VELOCITY = 4
 VOLUME = 50
 WASDBTTNS = [pygame.K_w, pygame.K_s, pygame.K_a, pygame.K_d, pygame.K_LSHIFT]
@@ -411,7 +413,7 @@ def choose_mode_screen():
 
 
 def generate_level(level):
-    global player_one, player_two
+    global player_one, player_two, green_spawnpoint, red_spawnpoint
     green_spawnpoint, red_spawnpoint = None, None  # Точки появления для игроков
     enemies_spawnpoints = []  # список с точками появления проивников
 
@@ -426,10 +428,12 @@ def generate_level(level):
             elif level[y][x] == 'G':
                 Tile('empty', (x - 1) // 2, (y - 1) // 2)
                 player_one = Player(1, (x - 1) // 2, (y - 1) // 2)
+                green_spawnpoint = ((x - 1) // 2, (y - 1) // 2)
             elif level[y][x] == 'R':
                 Tile('empty', (x - 1) // 2, (y - 1) // 2)
                 if PLAYRSCOUNT == 2:
                     player_two = Player(2, (x - 1) // 2, (y - 1) // 2)
+                    red_spawnpoint = ((x - 1) // 2, (y - 1) // 2)
             elif level[y][x] == 'E':
                 Tile('empty', (x - 1) // 2, (y - 1) // 2)
                 enemies_spawnpoints.append(((x - 1) // 2, (y - 1) // 2))
@@ -602,8 +606,10 @@ shot_end_images = [
     [load_image('shot_end_{}.png'.format(i + 1)) for i in range(4)],
     [rotate_image(load_image('shot_end_{}.png'.format(i + 1)), 90) for i in range(4)],
     [rotate_image(load_image('shot_end_{}.png'.format(i + 1)), 180) for i in range(4)]]
-# группы спрайтов
+null_image = load_image("null.png")
+
 tile_width, tile_height = 50, 50
+# группы спрайтов
 
 all_sprites = pygame.sprite.Group()
 tile_group = pygame.sprite.Group()
@@ -716,10 +722,10 @@ class Player(Object):
 
         self.num = num
         self.level = level
-        self.level = 1
         self.xp = 0
         self.angle = 0
-        self.delay = 0
+        self.shoot_delay = 0
+        self.game_delay = -1
         self.strength = PLAYER_HP[self.level]
         self.moving = False
         self.is_update_images = False
@@ -727,12 +733,26 @@ class Player(Object):
         self.update_image()
         self.rect = self.image.get_rect().move(tile_width * pos_x, tile_height * pos_y)
 
+        if len(pygame.sprite.spritecollide(self, player_group, False)) > 1:
+            if self.num == 1:
+                player_two.kill()
+            else:
+                player_one.kill()
+        pygame.sprite.spritecollide(self, enemy_group, True)
+
     def update(self):
         super().update()
+
+        if self.game_delay > 0:
+            self.game_delay -= 1
+            return
+        if self.game_delay == 0:
+            self.killall()
+
         self.update_level()
         self.update_image()
 
-        self.delay -= 1
+        self.shoot_delay -= 1
         if not self.moving:
             return
 
@@ -764,7 +784,7 @@ class Player(Object):
     def update_level(self):
         if self.level == len(PLAYER_LEVELS_LIMIT) - 1:
             return
-        if self.xp > PLAYER_LEVELS_LIMIT[self.level + 1]:
+        if self.xp >= PLAYER_LEVELS_LIMIT[self.level + 1]:
             self.xp = 0
             self.level += 1
             self.update_image()
@@ -777,10 +797,29 @@ class Player(Object):
         self.image = images[self.level][self.angle]
 
     def shoot(self):
-        if self.delay <= 0:
+        if self.shoot_delay <= 0:
             tank_shot.play()
             Shot(self)
-            self.delay = 30
+            self.shoot_delay = 30
+
+    def kill(self):
+        if self.game_delay == -1:
+            self.game_delay = 120
+        self.image = null_image
+        player_group.remove(self)
+        enemy_damageable_group.remove(self)
+
+    def killall(self):
+        global player_one, player_two
+        if self.num == 1:
+            player_one = Player(1, green_spawnpoint[0], green_spawnpoint[1])
+            player = player_one
+        else:
+            player_two = Player(2, red_spawnpoint[0], red_spawnpoint[1])
+            player = player_two
+        player_group.add(player)
+        enemy_damageable_group.add(player)
+        super().kill()
 
 
 class Enemy(Object):
@@ -1024,10 +1063,10 @@ class Shot(pygame.sprite.Sprite):
         self.kill()
 
 
-PLAYER_SHOT_XP = {Boarding: 100, Tree: 100, Train: 200, Enemy: 500}
-PLAYER_LEVELS_LIMIT = [None, 0, 200, 300]
+PLAYER_SHOT_XP = {Boarding: 100, Tree: 100, Train: 200, Enemy: 300}
+PLAYER_LEVELS_LIMIT = [None, 0, 1200, 2400]
 
-start_screen()
-# PLAYRSCOUNT = 2
-# level_play()
+# start_screen()
+PLAYRSCOUNT = 2
+level_play()
 pygame.quit()
