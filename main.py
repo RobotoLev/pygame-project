@@ -425,9 +425,11 @@ def generate_level(level):
                 Building('wall', (x - 1) // 2, (y - 1) // 2)
             elif level[y][x] == 'G':
                 Tile('empty', (x - 1) // 2, (y - 1) // 2)
+                green_spawnpoint = ((x - 1) // 2, (y - 1) // 2)
                 player_one = Player(1, (x - 1) // 2, (y - 1) // 2)
             elif level[y][x] == 'R':
                 Tile('empty', (x - 1) // 2, (y - 1) // 2)
+                red_spawnpoint = ((x - 1) // 2, (y - 1) // 2)
                 if PLAYRSCOUNT == 2:
                     player_two = Player(2, (x - 1) // 2, (y - 1) // 2)
             elif level[y][x] == 'E':
@@ -524,7 +526,8 @@ def level_play(level='level1.txt'):
             break
         for i in enemies:
             if i[2] >= 120 and random.randint(1, 8) == 1 and enemies_to_spawn > 0:
-                Enemy(i[0], i[1])
+                enType = random.randint(1, 3)
+                Enemy(i[0], i[1], level=enType)
                 i[2] = -1
                 enemies_to_spawn -= 1
             i[2] += 1
@@ -579,7 +582,8 @@ player_one_images = [None] +\
 player_two_images = [None] +\
                     [get_rotated_images('tanks\\source_tanks\\tank_red_mk{}.png'.format(i), 180)
                      for i in range(1, 4)]
-enemy_images = [get_rotated_images('tanks\\source_tanks\\tank_enemy_mk{}.png'.format(i), 0)
+enemy_images = [None] + \
+               [get_rotated_images('tanks\\source_tanks\\tank_enemy_mk{}.png'.format(i), 0)
                 for i in range(1, 4)]
 # building_images = {'rt': load_image('building_right-top.png'),
 #                    'lt': load_image('building_left-top.png'),
