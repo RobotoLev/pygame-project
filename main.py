@@ -847,6 +847,8 @@ class Enemy(Object):
         self.delay = 10
         self.shoot_delay = 0
 
+        pygame.sprite.spritecollide(self, player_group, True)
+
     def update(self):
         super().update()
         self.update_image()
@@ -903,6 +905,10 @@ class Enemy(Object):
         else:
             delta_x -= VELOCITY
 
+        condition = None
+        if len(pygame.sprite.spritecollide(self, enemy_group, False)) > 1:
+            condition = False
+
         self.rect = self.rect.move(delta_x, delta_y)
 
         res = pygame.sprite.spritecollide(self, enemy_damageable_group, False)
@@ -910,9 +916,11 @@ class Enemy(Object):
             if type(obj) != Player:
                 obj.damage(ENEMY_DAMAGE[self.level])
 
-        condition = (pygame.sprite.spritecollideany(self, solid_group, False) or
-                     pygame.sprite.spritecollideany(self, enemy_damageable_group, False) or
-                     len(pygame.sprite.spritecollide(self, enemy_group, False)) > 1)
+        if condition is None:
+            condition = len(pygame.sprite.spritecollide(self, enemy_group, False)) > 1
+        condition = (condition or pygame.sprite.spritecollideany(self, solid_group, False) or
+                     pygame.sprite.spritecollideany(self, enemy_damageable_group, False))
+
         if condition:
             self.rect = self.rect.move(-delta_x, -delta_y)
 
