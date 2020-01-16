@@ -9,6 +9,7 @@ MENUBTTNS = [None for _ in range(4)]
 MODEBTTNS = [None for _ in range(4)]
 STNGBTTNS = [None for _ in range(4)]
 PLAYRSCOUNT = 0
+LEVELS = 2
 
 
 player_one = None
@@ -21,13 +22,16 @@ PLAYRSKEYS = [WASDBTTNS, ARRWBTTNS]
 ANGLES = {0: 0, 1: 2, 2: 3, 3: 1}
 
 PLAYER_DAMAGE = [None, 400, 400, 500]
-PLAYER_SHOT_DAMAGE = [None, 100, 200, 500]
+PLAYER_SHOT_DAMAGE = [None, 100, 100, 200]
 ENEMY_DAMAGE = [None, 100, 200, 300]
-ENEMY_SHOT_DAMAGE = [None, 100, 200, 500]
+ENEMY_SHOT_DAMAGE = [None, 100, 200, 300]
+PLAYER_HP = [None, 100, 200, 400]
+ENEMY_HP = [None, 100, 100, 300]
 SHOT_VELOCITY = 5
 MAXDIST = 300
 
 pygame.init()
+pygame.mixer.init(frequency=22050, size=-16, channels=2, buffer=4096)
 tank_shot = pygame.mixer.Sound('data/Sounds/tank_shot.wav')
 sounds = list()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -370,7 +374,7 @@ def choose_mode_screen():
                 elif btn == 1:
                     flag = 2
                 elif btn == 2:
-                    flag = level_play
+                    flag = game
                 else:
                     flag = start_screen
                 choose_mode(btn)
@@ -462,9 +466,9 @@ def generate_level(level):
 
 
 def level_play(level='level1.txt'):
+    global ENEMIES_LEFT
     print('Game has been started')
     in_game = True
-
     all_sprites.empty()
     tile_group.empty()
     player_group.empty()
@@ -474,8 +478,8 @@ def level_play(level='level1.txt'):
     enemy_damageable_group.empty()
     temporary_group.empty()
 
-    level, enemies_count = load_level(level)
-    enemies_to_spawn = enemies_count
+    level, ENEMIES_LEFT = load_level(level)
+    enemies_to_spawn = ENEMIES_LEFT
     green, red, enemies = generate_level(level)
     enemies = list(map(lambda x: [*x, random.randint(0, 30)], enemies))
     while True:
@@ -532,7 +536,7 @@ def level_play(level='level1.txt'):
         enemy_damageable_group.draw(screen)
         temporary_group.draw(screen)
         solid_group.draw(screen)
-        if enemies_count == 0:
+        if ENEMIES_LEFT == 0:
             return
 
         pygame.display.flip()
@@ -546,6 +550,7 @@ def game(start_level=0):
     while True:
         level += 1
         level_play(f'level{level}.txt')
+        print(level)
 
 
 tile_images = {'empty': load_image('grass.png'),
@@ -634,7 +639,10 @@ class Object(pygame.sprite.Sprite):
             self.fire_damage = 1
 
     def update(self):
+        global ENEMIES_LEFT
         if self.strength <= 0:
+            if type(self) == Enemy:
+                ENEMIES_LEFT -= 1
             self.kill()
 
         if self.is_update_images:
@@ -700,13 +708,14 @@ class Tree(Object):
 
 
 class Player(Object):
-    def __init__(self, num, pos_x, pos_y):
+    def __init__(self, num, pos_x, pos_y, level=1):
         super().__init__(player_group, enemy_damageable_group, all_sprites)
 
         self.num = num
-        self.level = 2
+        self.level = level
         self.angle = 0
         self.delay = 0
+        self.strength = PLAYER_HP[self.level]
         self.moving = False
         self.is_update_images = False
 
@@ -754,18 +763,20 @@ class Player(Object):
 
     def shoot(self):
         if self.delay <= 0:
+            tank_shot.play()
             Shot(self.rect.x, self.rect.y, self.angle, self.level, True)
             self.delay = 30
 
 
 class Enemy(Object):
-    def __init__(self, pos_x, pos_y):
+    def __init__(self, pos_x, pos_y, level=1):
         super().__init__(enemy_group, player_damageable_group, all_sprites)
 
         self.level = 1
         self.angle = 0
         self.moving = False
         self.is_update_images = False
+        self.strength = ENEMY_HP[level]
 
         if PLAYRSCOUNT == 1:
             self.player = player_one
@@ -852,6 +863,7 @@ class Enemy(Object):
 
     def shoot(self):
         if self.shoot_delay <= 0:
+            tank_shot.play()
             Shot(self.rect.x, self.rect.y, self.angle, self.level, False)
             self.shoot_delay = random.randint(30, 120)
 
@@ -926,7 +938,6 @@ class Shot(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y, angle, level, is_player):
         super().__init__(all_sprites, temporary_group)
         self.angle = angle
-        tank_shot.play()
 
         if angle == 0:
             self.x = pos_x + 23
