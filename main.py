@@ -521,7 +521,8 @@ def level_play(level='level1.txt'):
             if i[2] >= 120 and random.randint(1, 8) == 1 and enemies_to_spawn > 0:
                 Enemy(i[0], i[1])
                 i[2] = -1
-                enemies_to_spawn -= 1
+                # enemies_to_spawn -= 1
+                enemies_to_spawn = 0
             i[2] += 1
 
         screen.fill(pygame.Color('black'))
@@ -567,9 +568,11 @@ tree_images = {'default': [load_image('trees\\tree_default_0.png'),
                            load_image('trees\\tree_default_1.png'),
                            load_image('trees\\tree_default_2.png'),
                            load_image('trees\\tree_default_3.png')]}
-player_one_images = [get_rotated_images('tanks\\source_tanks\\tank_green_mk{}.png'.format(i), 180)
+player_one_images = [None] +\
+                    [get_rotated_images('tanks\\source_tanks\\tank_green_mk{}.png'.format(i), 180)
                      for i in range(1, 4)]
-player_two_images = [get_rotated_images('tanks\\source_tanks\\tank_red_mk{}.png'.format(i), 180)
+player_two_images = [None] +\
+                    [get_rotated_images('tanks\\source_tanks\\tank_red_mk{}.png'.format(i), 180)
                      for i in range(1, 4)]
 enemy_images = [get_rotated_images('tanks\\source_tanks\\tank_enemy_mk{}.png'.format(i), 0)
                 for i in range(1, 4)]
@@ -704,7 +707,8 @@ class Player(Object):
         super().__init__(player_group, enemy_damageable_group, all_sprites)
 
         self.num = num
-        self.level = 2
+        self.level = 1
+        self.xp = 0
         self.angle = 0
         self.delay = 0
         self.moving = False
@@ -715,6 +719,9 @@ class Player(Object):
 
     def update(self):
         super().update()
+        self.update_level()
+        self.update_image()
+
         self.delay -= 1
         if not self.moving:
             return
@@ -743,7 +750,14 @@ class Player(Object):
         if condition:
             self.rect = self.rect.move(-delta_x, -delta_y)
             self.moving = False
-        self.update_image()
+
+    def update_level(self):
+        if self.level == len(PLAYER_LEVELS_LIMIT) - 1:
+            return
+        if self.xp > PLAYER_LEVELS_LIMIT[self.level + 1]:
+            self.xp = 0
+            self.level += 1
+            self.update_image()
 
     def update_image(self):
         if self.num == 1:
@@ -754,7 +768,8 @@ class Player(Object):
 
     def shoot(self):
         if self.delay <= 0:
-            Shot(self.rect.x, self.rect.y, self.angle, self.level, True)
+            # Shot(self.rect.x, self.rect.y, self.angle, self.level, True)
+            Shot(self)
             self.delay = 30
 
 
@@ -852,7 +867,8 @@ class Enemy(Object):
 
     def shoot(self):
         if self.shoot_delay <= 0:
-            Shot(self.rect.x, self.rect.y, self.angle, self.level, False)
+            # Shot(self.rect.x, self.rect.y, self.angle, self.level, False)
+            Shot(self)
             self.shoot_delay = random.randint(30, 120)
 
 
@@ -899,7 +915,7 @@ class ShotStart(AnimatedSprite):
 
 
 class ShotEnd(AnimatedSprite):
-    def __init__(self, pos_x, pos_y, angle, res, level, is_player):
+    def __init__(self, pos_x, pos_y, angle, res, level, is_player, obj):
         super().__init__(all_sprites)
         self.images = shot_end_images[angle]
         self.rect = pygame.Rect(pos_x, pos_y, 48, 48)
@@ -907,6 +923,7 @@ class ShotEnd(AnimatedSprite):
         self.res = res
         self.level = level
         self.is_player = is_player
+        self.obj = obj
 
         self.cadres = 1
         self.lifetime = 1
@@ -915,6 +932,10 @@ class ShotEnd(AnimatedSprite):
     def kill(self):
         if self.is_player:
             damage = PLAYER_SHOT_DAMAGE[self.level]
+
+            res_type = type(self.res)
+            if res_type in PLAYER_SHOT_XP and self.res.strength <= damage:
+                self.obj.xp += PLAYER_SHOT_XP[res_type]
         else:
             damage = ENEMY_SHOT_DAMAGE[self.level]
         if not self.is_player or type(self.res) != Player:
@@ -923,10 +944,14 @@ class ShotEnd(AnimatedSprite):
 
 
 class Shot(pygame.sprite.Sprite):
-    def __init__(self, pos_x, pos_y, angle, level, is_player):
+    # def __init__(self, pos_x, pos_y, angle, level, is_player):
+    def __init__(self, obj):
         super().__init__(all_sprites, temporary_group)
-        self.angle = angle
-        tank_shot.play()
+        angle = obj.angle
+        pos_x = obj.rect.x
+        pos_y = obj.rect.y
+        level = obj.level
+        is_player = type(obj) == Player
 
         if angle == 0:
             self.x = pos_x + 23
@@ -947,11 +972,11 @@ class Shot(pygame.sprite.Sprite):
             start = False
             delta_x = 0
             delta_y = 0
-            if self.angle == 0:
+            if angle == 0:
                 delta_y -= SHOT_VELOCITY
-            elif self.angle == 1:
+            elif angle == 1:
                 delta_x += SHOT_VELOCITY
-            elif self.angle == 2:
+            elif angle == 2:
                 delta_y += SHOT_VELOCITY
             else:
                 delta_x -= SHOT_VELOCITY
@@ -970,7 +995,7 @@ class Shot(pygame.sprite.Sprite):
             y += 48
         else:
             x -= 48
-        ShotStart(x, y, self.angle)
+        ShotStart(x, y, angle)
 
         if angle == 0:
             x = self.rect.x - 22
@@ -985,11 +1010,14 @@ class Shot(pygame.sprite.Sprite):
             x = res.rect.x + res.rect.width
             y = self.rect.y - 22
 
-        ShotEnd(x, y, self.angle, res, level, is_player)
+        ShotEnd(x, y, angle, res, level, is_player, obj)
         self.kill()
 
 
-start_screen()
-# PLAYRSCOUNT = 2
-# level_play()
+PLAYER_SHOT_XP = {Boarding: 100, Tree: 100, Train: 200, Enemy: 500}
+PLAYER_LEVELS_LIMIT = [None, 0, 200, 300]
+
+# start_screen()
+PLAYRSCOUNT = 2
+level_play()
 pygame.quit()
