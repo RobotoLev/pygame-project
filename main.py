@@ -500,7 +500,7 @@ def level_play(level='level1.txt'):
                     if res is not None:
                         in_game = False
                         break
-                print("Pressed", key)
+                # print("Pressed", key)
                 for num, keys in enumerate(PLAYRSKEYS):
                     if key not in keys:
                         continue
@@ -545,7 +545,7 @@ def level_play(level='level1.txt'):
         temporary_group.draw(screen)
         solid_group.draw(screen)
         if ENEMIES_LEFT == 0:
-            return
+            return 'gg'
 
         pygame.display.flip()
         all_sprites.update()
@@ -555,9 +555,10 @@ def level_play(level='level1.txt'):
 
 def game(start_level=0):
     level = start_level
+    print('game(not level)')
     while True:
         level += 1
-        level_play(f'level{level}.txt')
+        print(level_play(f'level{level}.txt'))
         print(level)
 
 
@@ -1072,5 +1073,5 @@ PLAYER_LEVELS_LIMIT = [None, 0, 1200, 2400]
 
 # start_screen()
 PLAYRSCOUNT = 2
-level_play()
+game()
 pygame.quit()
