@@ -38,11 +38,14 @@ iteration = 0
 
 
 def pause(chosed=None, moved=None):
-    screen.fill((0, 0, 0))
-    all_sprites.draw(screen)
+    screen.fill(pygame.Color('black'))
+    tile_group.draw(screen)
+    player_group.draw(screen)
+    enemy_group.draw(screen)
     player_damageable_group.draw(screen)
     enemy_damageable_group.draw(screen)
-    player_group.draw(screen)
+    temporary_group.draw(screen)
+    solid_group.draw(screen)
     image = pygame.Surface([WIDTH // 3, HEIGHT])
     image.fill(pygame.Color("black"))
     screen.blit(image, (WIDTH // 3, 0))
@@ -515,7 +518,7 @@ def level_play(level='level1.txt'):
         if not in_game:
             break
         for i in enemies:
-            if i[2] >= 60 and random.randint(1, 8) == 1:
+            if i[2] >= 120 and random.randint(1, 8) == 1 and enemies_to_spawn > 0:
                 Enemy(i[0], i[1])
                 i[2] = -1
                 enemies_to_spawn -= 1
@@ -535,7 +538,7 @@ def level_play(level='level1.txt'):
         pygame.display.flip()
         all_sprites.update()
         clock.tick(FPS)
-    # res()
+    res()
 
 
 def game(start_level=0):
