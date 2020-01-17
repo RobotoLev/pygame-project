@@ -1,46 +1,5 @@
 import random
-import pygame
 from source.system_functions import *
-
-FPS = 30
-WIDTH = 1072
-HEIGHT = 603
-MENUBTTNS = [None for _ in range(4)]
-MODEBTTNS = [None for _ in range(4)]
-STNGBTTNS = [None for _ in range(4)]
-PLAYRSCOUNT = 0
-LEVELS = 2
-
-
-player_one = None
-player_two = None
-green_spawnpoint = None
-red_spawnpoint = None
-VELOCITY = 4
-VOLUME = 50
-WASDBTTNS = [pygame.K_w, pygame.K_s, pygame.K_a, pygame.K_d, pygame.K_LSHIFT]
-ARRWBTTNS = [pygame.K_UP, pygame.K_DOWN, pygame.K_LEFT, pygame.K_RIGHT, pygame.K_SPACE]
-PLAYRSKEYS = [WASDBTTNS, ARRWBTTNS]
-ANGLES = {0: 0, 1: 2, 2: 3, 3: 1}
-
-PLAYER_DAMAGE = [None, 400, 400, 500]
-PLAYER_SHOT_DAMAGE = [None, 100, 100, 200]
-ENEMY_DAMAGE = [None, 100, 200, 300]
-ENEMY_SHOT_DAMAGE = [None, 100, 200, 300]
-PLAYER_HP = [None, 100, 200, 400]
-ENEMY_HP = [None, 100, 100, 300]
-SHOT_VELOCITY = 5
-MAXDIST = 300
-
-pygame.init()
-pygame.mixer.init(frequency=22050, size=-16, channels=2, buffer=4096)
-tank_shot = pygame.mixer.Sound('data/Sounds/tank_shot.wav')
-sounds = list()
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
-clock = pygame.time.Clock()
-
-running = True
-iteration = 0
 
 
 def pause(chosed=None, moved=None):
@@ -428,14 +387,13 @@ def generate_level(level):
             elif level[y][x] == 'G':
                 Tile('empty', (x - 1) // 2, (y - 1) // 2)
                 green_spawnpoint = ((x - 1) // 2, (y - 1) // 2)
-                player_one = Player(1, (x - 1) // 2, (y - 1) // 2)
-                green_spawnpoint = ((x - 1) // 2, (y - 1) // 2)
+                player_one = Player(1, green_spawnpoint)
             elif level[y][x] == 'R':
                 Tile('empty', (x - 1) // 2, (y - 1) // 2)
                 red_spawnpoint = ((x - 1) // 2, (y - 1) // 2)
                 if PLAYRSCOUNT == 2:
-                    player_two = Player(2, (x - 1) // 2, (y - 1) // 2)
                     red_spawnpoint = ((x - 1) // 2, (y - 1) // 2)
+                    player_two = Player(2, red_spawnpoint)
             elif level[y][x] == 'E':
                 Tile('empty', (x - 1) // 2, (y - 1) // 2)
                 enemies_spawnpoints.append(((x - 1) // 2, (y - 1) // 2))
@@ -530,8 +488,12 @@ def level_play(level='level1.txt'):
             break
         for i in enemies:
             if i[2] >= 120 and random.randint(1, 8) == 1 and enemies_to_spawn > 0:
-                enType = random.randint(1, 3)
-                Enemy(i[0], i[1], level=enType)
+                en_type = random.randint(1, 3)
+                if PLAYRSCOUNT == 1:
+                    player = player_one
+                else:
+                    player = random.choice([player_one, player_two])
+                Enemy(i[0], i[1], player, level=en_type)
                 i[2] = -1
                 enemies_to_spawn -= 1
             i[2] += 1
@@ -560,72 +522,6 @@ def game(start_level=0):
         level += 1
         print(level_play(f'level{level}.txt'))
         print(level)
-
-
-tile_images = {'empty': load_image('grass.png'),
-               'hor_rail': load_image('horizontal_rails.png'),
-               'hor_rail_le': load_image('horizontal_rails_lef_end.png'),
-               'hor_rail_re': load_image('horizontal_rails_rig_end.png'),
-               'ver_rail': load_image('vertical_rails.png'),
-               'ver_rail_te': load_image('vertical_rails_top_end.png'),
-               'ver_rail_be': load_image('vertical_rails_bot_end.png')}
-board_images = {'horiz': [load_image('board_horizontal.png'),
-                          load_image('board_horizontal_damaged.png')],
-                'verti': [load_image('board_vertical.png'),
-                          load_image('board_vertical_damaged.png')]}
-train_images = {'horiz': [load_image('horizontal_train.png'),
-                          load_image('horizontal_train_damaged.png')],
-                'verti': [load_image('vertical_train.png'),
-                          load_image('vertical_train_damaged.png')]}
-tree_images = {'default': [load_image('trees\\tree_default_0.png'),
-                           load_image('trees\\tree_default_1.png'),
-                           load_image('trees\\tree_default_2.png'),
-                           load_image('trees\\tree_default_3.png')]}
-player_one_images = [None] +\
-                    [get_rotated_images('tanks\\source_tanks\\tank_green_mk{}.png'.format(i), 180)
-                     for i in range(1, 4)]
-player_two_images = [None] +\
-                    [get_rotated_images('tanks\\source_tanks\\tank_red_mk{}.png'.format(i), 180)
-                     for i in range(1, 4)]
-enemy_images = [None] + \
-               [get_rotated_images('tanks\\source_tanks\\tank_enemy_mk{}.png'.format(i), 0)
-                for i in range(1, 4)]
-# building_images = {'rt': load_image('building_right-top.png'),
-#                    'lt': load_image('building_left-top.png'),
-#                    'rb': load_image('building_right-bot.png'),
-#                    'lb': load_image('building_left-bot.png'),
-#                    'mt': load_image('building_mid-top.png'),
-#                    'mr': load_image('building_mid-right.png'),
-#                    'mb': load_image('building_mid-bot.png'),
-#                    'ml': load_image('building_mid-left.png'),
-#                    'center': load_image('building_center.png'),
-#                    'wall': load_image('box.png')}
-building_images = {'wall': load_image('box.png')}
-shot_start_images = [
-    [rotate_image(load_image('shot_start_{}.png'.format(i + 1)), 270) for i in range(4)],
-    [load_image('shot_start_{}.png'.format(i + 1)) for i in range(4)],
-    [rotate_image(load_image('shot_start_{}.png'.format(i + 1)), 90) for i in range(4)],
-    [rotate_image(load_image('shot_start_{}.png'.format(i + 1)), 180) for i in range(4)]]
-shot_end_images = [
-    [rotate_image(load_image('shot_end_{}.png'.format(i + 1)), 270) for i in range(4)],
-    [load_image('shot_end_{}.png'.format(i + 1)) for i in range(4)],
-    [rotate_image(load_image('shot_end_{}.png'.format(i + 1)), 90) for i in range(4)],
-    [rotate_image(load_image('shot_end_{}.png'.format(i + 1)), 180) for i in range(4)]]
-null_image = load_image("null.png")
-
-tile_width, tile_height = 50, 50
-# группы спрайтов
-
-all_sprites = pygame.sprite.Group()
-tile_group = pygame.sprite.Group()
-player_group = pygame.sprite.Group()
-enemy_group = pygame.sprite.Group()
-
-object_group = pygame.sprite.Group()
-player_damageable_group = pygame.sprite.Group()
-enemy_damageable_group = pygame.sprite.Group()
-solid_group = pygame.sprite.Group()
-temporary_group = pygame.sprite.Group()
 
 
 class Tile(pygame.sprite.Sprite):
@@ -722,11 +618,13 @@ class Tree(Object):
 
 
 class Player(Object):
-    def __init__(self, num, pos_x, pos_y, level=1):
+    def __init__(self, num, spawnpoint, level=1):
+        global ENEMIES_LEFT
         super().__init__(player_group, enemy_damageable_group, all_sprites)
 
         self.num = num
         self.level = level
+        self.spawnpoint = spawnpoint
         self.xp = 0
         self.angle = 0
         self.shoot_delay = 0
@@ -736,14 +634,15 @@ class Player(Object):
         self.is_update_images = False
 
         self.update_image()
-        self.rect = self.image.get_rect().move(tile_width * pos_x, tile_height * pos_y)
+        self.rect = self.image.get_rect().move(tile_width * spawnpoint[0],
+                                               tile_height * spawnpoint[1])
 
         if len(pygame.sprite.spritecollide(self, player_group, False)) > 1:
             if self.num == 1:
                 player_two.kill()
             else:
                 player_one.kill()
-        pygame.sprite.spritecollide(self, enemy_group, True)
+        ENEMIES_LEFT -= len(pygame.sprite.spritecollide(self, enemy_group, True))
 
     def update(self):
         super().update()
@@ -817,10 +716,10 @@ class Player(Object):
     def killall(self):
         global player_one, player_two
         if self.num == 1:
-            player_one = Player(1, green_spawnpoint[0], green_spawnpoint[1])
+            player_one = Player(1, self.spawnpoint)
             player = player_one
         else:
-            player_two = Player(2, red_spawnpoint[0], red_spawnpoint[1])
+            player_two = Player(2, self.spawnpoint)
             player = player_two
         player_group.add(player)
         enemy_damageable_group.add(player)
@@ -828,7 +727,7 @@ class Player(Object):
 
 
 class Enemy(Object):
-    def __init__(self, pos_x, pos_y, level=1):
+    def __init__(self, pos_x, pos_y, player, level=1):
         super().__init__(enemy_group, player_damageable_group, all_sprites)
 
         self.level = level
@@ -837,10 +736,7 @@ class Enemy(Object):
         self.is_update_images = False
         self.strength = ENEMY_HP[level]
 
-        if PLAYRSCOUNT == 1:
-            self.player = player_one
-        else:
-            self.player = random.choice([player_one, player_two])
+        self.player = player
 
         self.update_image()
         self.rect = self.image.get_rect().move(tile_width * pos_x, tile_height * pos_y)
@@ -1077,9 +973,8 @@ class Shot(pygame.sprite.Sprite):
 
 
 PLAYER_SHOT_XP = {Boarding: 100, Tree: 100, Train: 200, Enemy: 300}
-PLAYER_LEVELS_LIMIT = [None, 0, 1200, 2400]
 
-# start_screen()
-PLAYRSCOUNT = 2
-game()
+start_screen()
+# PLAYRSCOUNT = 2
+# game()
 pygame.quit()
