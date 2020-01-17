@@ -1,4 +1,4 @@
-import pygame
+# import pygame
 from source.system_functions import *
 
 FPS = 30

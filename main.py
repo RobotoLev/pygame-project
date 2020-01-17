@@ -147,9 +147,9 @@ def main_menu(pressed=None, moved=None):
 
 def what_is_pressed(buttons, pos):
     x, y = pos
-    for iteration, i in enumerate(buttons):
+    for it, i in enumerate(buttons):
         if i[0][2] + i[0][0] >= x >= i[0][0] and i[0][1] <= y <= i[0][1] + i[0][3]:
-            return iteration
+            return it
 
 
 def start_screen():
@@ -573,6 +573,7 @@ class Object(pygame.sprite.Sprite):
         self.image = None
         self.fireable = False
         self.is_fired = False
+        self.fire_damage = 0
         self.images = []
 
         self.is_update_images = True
