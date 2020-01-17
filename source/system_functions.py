@@ -1,6 +1,7 @@
 import sys
 import os
-from source.init import *
+import pygame
+#from source.init import *
 
 
 def terminate():

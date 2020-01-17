@@ -1,5 +1,5 @@
 import random
-from source.system_functions import *
+from source.init import *
 
 
 def pause(chosed=None, moved=None):
@@ -318,6 +318,41 @@ def continue_screen():
     pass
 
 
+def new_level_screen(level):
+    flags = []
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                flags.append(event.button)
+            elif event.type == pygame.MOUSEBUTTONUP:
+                if event.button in flags:
+                    return
+            elif event.type == pygame.KEYDOWN:
+                flags.append(event.key)
+            elif event.type == pygame.KEYUP:
+                if event.key in flags:
+                    return
+        screen.fill((0, 0, 0))
+        texts = [f'Уровень {level}', 'нажмите любую кнопку, чтобы начать']
+        cr = (100, 255, 100)
+        for i in range(2):
+            font = pygame.font.Font(None, 50)
+            if i == 1:
+                font = pygame.font.Font(None, 30)
+            text = font.render(texts[i], 1, cr)
+            text_h = text.get_height()
+            text_w = text.get_width()
+            text_x = WIDTH // 2 - text_w // 2
+            text_y = (HEIGHT // 5) * 2 - text_h // 2
+            if i == 1:
+                text_y = (HEIGHT // 5) * 4 - text_h // 2
+            screen.blit(text, (text_x, text_y))
+        pygame.display.flip()
+        clock.tick(FPS)
+
+
 def choose_mode_screen():
     choose_mode()
     flag = None
@@ -517,10 +552,10 @@ def level_play(level='level1.txt'):
 
 def game(start_level=0):
     level = start_level
-    print('game(not level)')
     while True:
         level += 1
-        print(level_play(f'level{level}.txt'))
+        new_level_screen(level)
+        level_play(f'level{level}.txt')
         print(level)
 
 

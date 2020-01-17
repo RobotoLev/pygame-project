@@ -1,5 +1,5 @@
 import pygame
-from system_functions import load_image, rotate_image, get_rotated_images
+from source.system_functions import *
 
 FPS = 30
 WIDTH = 1072
