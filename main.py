@@ -156,6 +156,7 @@ def start_screen():
     main_menu()
     in_menu = True
     flag = None
+    btn = None
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -174,19 +175,19 @@ def start_screen():
                 main_menu(btn)
             elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
                 if flag is not None:
-                    iter = what_is_pressed(MENUBTTNS, event.pos)
-                    if iter == btn:
+                    it = what_is_pressed(MENUBTTNS, event.pos)
+                    if it == btn:
                         in_menu = False
                         break
                     else:
                         flag = None
                     main_menu()
             elif event.type == pygame.MOUSEMOTION:
-                butn = what_is_pressed(MENUBTTNS, event.pos)
+                btn2 = what_is_pressed(MENUBTTNS, event.pos)
                 if 1 in event.buttons:
-                    main_menu(btn, butn)
+                    main_menu(btn, btn2)
                 else:
-                    main_menu(moved=butn)
+                    main_menu(moved=btn2)
 
         if not in_menu:
             break
@@ -200,6 +201,7 @@ def pause_screen():
     pause()
     in_menu = True
     flag = None
+    btn = None
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -220,26 +222,26 @@ def pause_screen():
                 pause(btn)
             elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
                 if flag is not None:
-                    iter = what_is_pressed(MENUBTTNS, event.pos)
-                    if iter == btn:
-                        if iter == 0:
+                    it = what_is_pressed(MENUBTTNS, event.pos)
+                    if it == btn:
+                        if it == 0:
                             return
-                        elif iter == 1:
+                        elif it == 1:
                             settings_screen(True)
-                        elif iter == 2:
+                        elif it == 2:
                             return start_screen
-                        elif iter == 3:
+                        elif it == 3:
                             terminate()
                         break
                     else:
                         flag = None
                     pause()
             elif event.type == pygame.MOUSEMOTION:
-                butn = what_is_pressed(MENUBTTNS, event.pos)
+                btn2 = what_is_pressed(MENUBTTNS, event.pos)
                 if 1 in event.buttons:
-                    pause(btn, butn)
+                    pause(btn, btn2)
                 else:
-                    pause(moved=butn)
+                    pause(moved=btn2)
         if not in_menu:
             break
 
@@ -252,6 +254,7 @@ def settings_screen(on_pause=False):
     global VOLUME
     settings()
     in_menu = True
+    btn = None
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -270,19 +273,19 @@ def settings_screen(on_pause=False):
                 settings(btn)
             elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
                 if flag is not None:
-                    iter = what_is_pressed(STNGBTTNS, event.pos)
-                    if iter == btn:
-                        if iter == 3:
+                    it = what_is_pressed(STNGBTTNS, event.pos)
+                    if it == btn:
+                        if it == 3:
                             if on_pause:
                                 return
                             in_menu = False
                             break
-                        elif iter == 0:
+                        elif it == 0:
                             if PLAYRSKEYS[0] == WASDBTTNS:
                                 PLAYRSKEYS[0] = ARRWBTTNS
                             else:
                                 PLAYRSKEYS[0] = WASDBTTNS
-                        elif iter == 1:
+                        elif it == 1:
                             if PLAYRSKEYS[1] == WASDBTTNS:
                                 PLAYRSKEYS[1] = ARRWBTTNS
                             else:
@@ -291,7 +294,7 @@ def settings_screen(on_pause=False):
                         flag = None
                     settings()
             elif event.type == pygame.MOUSEMOTION:
-                butn = what_is_pressed(STNGBTTNS, event.pos)
+                btn2 = what_is_pressed(STNGBTTNS, event.pos)
                 if 1 in event.buttons:
                     x, y = event.pos
                     if flag == 2:
@@ -303,9 +306,9 @@ def settings_screen(on_pause=False):
                         tank_shot.set_volume(VOLUME / 100)
                         for i in sounds:
                             i.set_volume(VOLUME / 100)
-                    settings(btn, butn)
+                    settings(btn, btn2)
                 else:
-                    settings(moved=butn)
+                    settings(moved=btn2)
         if not in_menu:
             break
 
@@ -396,6 +399,7 @@ def look_at_score():
 def choose_mode_screen():
     choose_mode()
     flag = None
+    btn = None
     global PLAYRSCOUNT
     choosing = True
     while True:
@@ -416,17 +420,17 @@ def choose_mode_screen():
                 choose_mode(btn)
             elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
                 if flag is not None:
-                    iter = what_is_pressed(MODEBTTNS, event.pos)
-                    if iter == btn:
-                        if iter == 0:
+                    it = what_is_pressed(MODEBTTNS, event.pos)
+                    if it == btn:
+                        if it == 0:
                             PLAYRSCOUNT = 1
-                        elif iter == 1:
+                        elif it == 1:
                             PLAYRSCOUNT = 2
-                        elif iter == 2:
+                        elif it == 2:
                             if PLAYRSCOUNT != 0:
                                 choosing = False
                                 break
-                        elif iter == 3:
+                        elif it == 3:
                             choosing = False
                             PLAYRSCOUNT = 0
                             break
@@ -434,11 +438,11 @@ def choose_mode_screen():
                         flag = None
                     choose_mode()
             elif event.type == pygame.MOUSEMOTION:
-                butn = what_is_pressed(MODEBTTNS, event.pos)
+                btn2 = what_is_pressed(MODEBTTNS, event.pos)
                 if 1 in event.buttons:
-                    choose_mode(btn, butn)
+                    choose_mode(btn, btn2)
                 else:
-                    choose_mode(moved=butn)
+                    choose_mode(moved=btn2)
         if not choosing:
             break
         pygame.display.flip()
