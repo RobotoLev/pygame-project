@@ -357,6 +357,7 @@ def new_level_screen(level):
         time -= 1
         clock.tick(FPS)
 
+
 def look_at_score():
     flags = []
     while True:
@@ -390,6 +391,7 @@ def look_at_score():
             screen.blit(text, (text_x, text_y))
         pygame.display.flip()
         clock.tick(FPS)
+
 
 def choose_mode_screen():
     choose_mode()
@@ -617,7 +619,6 @@ def game(start_level=0, load=None):
             break
     look_at_score()
     start_screen()
-
 
 
 class Tile(pygame.sprite.Sprite):
