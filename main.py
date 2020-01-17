@@ -209,14 +209,7 @@ def pause_screen():
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 x, y = event.pos
                 btn = what_is_pressed(MENUBTTNS, (x, y))
-                if btn == 3:
-                    flag = terminate
-                elif btn == 2:
-                    flag = settings_screen
-                elif btn == 1:
-                    flag = continue_screen
-                elif btn == 0:
-                    flag = choose_mode_screen
+                flag = btn
                 pause(btn)
             elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
                 if flag is not None:
@@ -315,7 +308,17 @@ def settings_screen(on_pause=False):
 
 
 def continue_screen():
-    pass
+    global PLAYRSCOUNT, SCORE
+    try:
+        with open('data/cont.txt', 'r') as f:
+            level, players, score = map(int, f.read().split())
+        if 0 > level > LEVELS or players not in (1, 2):
+            1 / 0
+        PLAYRSCOUNT = players
+        SCORE = score
+        game(level, True)
+    except Exception as _:
+        start_screen()
 
 
 def new_level_screen(level):
@@ -337,12 +340,12 @@ def new_level_screen(level):
                 if event.key in flags:
                     return
         screen.fill((0, 0, 0))
-        texts = [f'Уровень {level}', 'нажмите любую кнопку, чтобы начать']
+        texts = [f'Уровень {level}', f'Счёт {SCORE}', 'нажмите любую кнопку, чтобы начать']
         cr = (100, 255, 100)
         if time < 0:
-            for i in range(2):
+            for i in range(3):
                 font = pygame.font.Font(None, 50)
-                if i == 1:
+                if i in (2, 1):
                     font = pygame.font.Font(None, 30)
                 text = font.render(texts[i], 1, cr)
                 text_h = text.get_height()
@@ -350,6 +353,8 @@ def new_level_screen(level):
                 text_x = WIDTH // 2 - text_w // 2
                 text_y = (HEIGHT // 5) * 2 - text_h // 2
                 if i == 1:
+                    text_y = (HEIGHT // 5) * 3 - text_h // 2
+                if i == 2:
                     text_y = (HEIGHT // 5) * 4 - text_h // 2
                 screen.blit(text, (text_x, text_y))
         if time < 0:
@@ -504,11 +509,11 @@ def generate_level(level):
     return green_spawnpoint, red_spawnpoint, enemies_spawnpoints
 
 
-def level_play(level='level1.txt'):
+def level_play(level_name='level1.txt'):
     global ENEMIES_LEFT, LOCAL_SCORE
     print('Game has been started')
     in_game = True
-    LOCAL_SCORE = SCORE
+    LOCAL_SCORE = 0
     all_sprites.empty()
     tile_group.empty()
     player_group.empty()
@@ -518,7 +523,7 @@ def level_play(level='level1.txt'):
     enemy_damageable_group.empty()
     temporary_group.empty()
 
-    level, ENEMIES_LEFT = load_level(level)
+    level, ENEMIES_LEFT = load_level(level_name)
     enemies_to_spawn = ENEMIES_LEFT
     green, red, enemies = generate_level(level)
     enemies = list(map(lambda x: [*x, random.randint(0, 30)], enemies))
@@ -530,6 +535,10 @@ def level_play(level='level1.txt'):
                 key = event.key
                 if key == pygame.K_ESCAPE:
                     res = pause_screen()
+                    print(res)
+                    if res == start_screen:
+                        with open('data/cont.txt', 'w') as f:
+                            f.write(f'{int(level_name.split(".")[0].split("evel")[1]) - 1} {PLAYRSCOUNT} {SCORE}')
                     if res is not None:
                         in_game = False
                         break
@@ -589,7 +598,7 @@ def level_play(level='level1.txt'):
 
         font = pygame.font.Font(None, 50)
         cr = (0, 200, 0)
-        text = font.render(str(LOCAL_SCORE), 1, cr)
+        text = font.render(str(LOCAL_SCORE + SCORE), 1, cr)
         text_h = text.get_height()
         text_w = text.get_width()
         text_x = WIDTH // 2 - text_w // 2
@@ -606,17 +615,18 @@ def level_play(level='level1.txt'):
 def game(start_level=0, load=None):
     global SCORE
     level = start_level
-    SCORE = 0
-    if load:
-        pass
+    if load is None:
+        SCORE = 0
 
     while True:
         level += 1
-        new_level_screen(level)
-        SCORE = level_play(f'level{level}.txt')
-        print(level)
         if LEVELS == level:
             break
+        new_level_screen(level)
+        result = level_play(f'level{level}.txt')
+        SCORE += result
+        print(level)
+
     look_at_score()
     start_screen()
 
