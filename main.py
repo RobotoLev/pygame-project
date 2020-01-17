@@ -319,8 +319,10 @@ def continue_screen():
 
 
 def new_level_screen(level):
+    time = 60
     flags = []
     while True:
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
@@ -337,6 +339,43 @@ def new_level_screen(level):
         screen.fill((0, 0, 0))
         texts = [f'Уровень {level}', 'нажмите любую кнопку, чтобы начать']
         cr = (100, 255, 100)
+        if time < 0:
+            for i in range(2):
+                font = pygame.font.Font(None, 50)
+                if i == 1:
+                    font = pygame.font.Font(None, 30)
+                text = font.render(texts[i], 1, cr)
+                text_h = text.get_height()
+                text_w = text.get_width()
+                text_x = WIDTH // 2 - text_w // 2
+                text_y = (HEIGHT // 5) * 2 - text_h // 2
+                if i == 1:
+                    text_y = (HEIGHT // 5) * 4 - text_h // 2
+                screen.blit(text, (text_x, text_y))
+        if time < 0:
+            pygame.display.flip()
+        time -= 1
+        clock.tick(FPS)
+
+def look_at_score():
+    flags = []
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                flags.append(event.button)
+            elif event.type == pygame.MOUSEBUTTONUP:
+                if event.button in flags:
+                    return
+            elif event.type == pygame.KEYDOWN:
+                flags.append(event.key)
+            elif event.type == pygame.KEYUP:
+                if event.key in flags:
+                    return
+        screen.fill((0, 0, 0))
+        texts = [f'Ваш счёт {SCORE}', 'нажмите любую кнопку, чтобы выйти в меню']
+        cr = (100, 255, 100)
         for i in range(2):
             font = pygame.font.Font(None, 50)
             if i == 1:
@@ -351,7 +390,6 @@ def new_level_screen(level):
             screen.blit(text, (text_x, text_y))
         pygame.display.flip()
         clock.tick(FPS)
-
 
 def choose_mode_screen():
     choose_mode()
@@ -465,10 +503,10 @@ def generate_level(level):
 
 
 def level_play(level='level1.txt'):
-    global ENEMIES_LEFT
+    global ENEMIES_LEFT, LOCAL_SCORE
     print('Game has been started')
     in_game = True
-
+    LOCAL_SCORE = SCORE
     all_sprites.empty()
     tile_group.empty()
     player_group.empty()
@@ -542,21 +580,44 @@ def level_play(level='level1.txt'):
         temporary_group.draw(screen)
         solid_group.draw(screen)
         if ENEMIES_LEFT == 0:
-            return 'gg'
+            return LOCAL_SCORE
 
-        pygame.display.flip()
         all_sprites.update()
         clock.tick(FPS)
+
+        font = pygame.font.Font(None, 50)
+        cr = (0, 200, 0)
+        text = font.render(str(LOCAL_SCORE), 1, cr)
+        text_h = text.get_height()
+        text_w = text.get_width()
+        text_x = WIDTH // 2 - text_w // 2
+        text_y = (HEIGHT // 20) * 1 - text_h // 2
+        pygame.draw.rect(screen, (255, 255, 255), (text_x - 5, text_y - 5,
+                                                   text_w + 10, text_h + 10))
+        screen.blit(text, (text_x, text_y))
+
+        pygame.display.flip()
+
     res()
 
 
-def game(start_level=0):
+def game(start_level=0, load=None):
+    global SCORE
     level = start_level
+    SCORE = 0
+    if load:
+        pass
+
     while True:
         level += 1
         new_level_screen(level)
-        level_play(f'level{level}.txt')
+        SCORE = level_play(f'level{level}.txt')
         print(level)
+        if LEVELS == level:
+            break
+    look_at_score()
+    start_screen()
+
 
 
 class Tile(pygame.sprite.Sprite):
@@ -925,14 +986,21 @@ class ShotEnd(AnimatedSprite):
         self.delay = 4
 
     def kill(self):
+        global SCORE, LOCAL_SCORE
+        res_type = type(self.res)
         if self.is_player:
             damage = PLAYER_SHOT_DAMAGE[self.level]
-
-            res_type = type(self.res)
             if res_type in PLAYER_SHOT_XP and self.res.strength <= damage:
                 self.obj.xp += PLAYER_SHOT_XP[res_type]
+            if res_type == Enemy and self.res.strength <= damage:
+                print('536')
+                LOCAL_SCORE += PLAYER_SCORE_ENEMIES[self.res.level]
         else:
             damage = ENEMY_SHOT_DAMAGE[self.level]
+            if res_type == Player and self.res.strength <= damage:
+                print(self.res.game_delay)
+                if self.res.game_delay == -1:
+                    LOCAL_SCORE -= 1000
         if not self.is_player or type(self.res) != Player:
             self.res.damage(damage, True)
         super().kill()
@@ -1009,6 +1077,7 @@ class Shot(pygame.sprite.Sprite):
 
 
 PLAYER_SHOT_XP = {Boarding: 100, Tree: 100, Train: 200, Enemy: 300}
+PLAYER_SCORE_ENEMIES = {1: 500, 2: 1200, 3: 2500}
 
 start_screen()
 # PLAYRSCOUNT = 2

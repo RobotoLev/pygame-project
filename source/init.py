@@ -10,7 +10,7 @@ MODEBTTNS = [None for _ in range(4)]
 STNGBTTNS = [None for _ in range(4)]
 PLAYRSCOUNT = 0
 LEVELS = 2
-
+SCORE = 0
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.mixer.init(frequency=22050, size=-16, channels=2, buffer=4096)
