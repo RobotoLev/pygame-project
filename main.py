@@ -624,6 +624,7 @@ def game(start_level=0, load=None):
 
     while True:
         level += 1
+        print(LEVELS, level)
         if LEVELS == level:
             break
         new_level_screen(level)
