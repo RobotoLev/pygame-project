@@ -39,7 +39,7 @@ def pause(chosed=None, moved=None):
 def settings(chosed=None, moved=None):
     screen.fill((0, 0, 0))
     font = pygame.font.Font(None, 50)
-    texts = ['1 игрок', '2 игрока', 'Громкость', 'НАЗАД']
+    texts = ['Игрок 1', 'Игрок 2', 'Громкость', 'НАЗАД']
     for i in range(4):
         cr = (100, 255, 100)
         width = 1

@@ -9,7 +9,7 @@ MENUBTTNS = [None for _ in range(4)]
 MODEBTTNS = [None for _ in range(4)]
 STNGBTTNS = [None for _ in range(4)]
 PLAYRSCOUNT = 0
-LEVELS = 3
+LEVELS = 4
 SCORE = 0
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
