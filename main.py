@@ -455,52 +455,56 @@ def choose_mode_screen():
     flag()
 
 
-def generate_level(level):
+def generate_level(level, biom):
     global player_one, player_two, green_spawnpoint, red_spawnpoint
     green_spawnpoint, red_spawnpoint = None, None  # Точки появления для игроков
     enemies_spawnpoints = []  # список с точками появления проивников
-
+    empty_name = 'empty'
+    biome_modif = ''
+    if biom == 'snowy':
+        biome_modif = 'snowy_'
+        empty_name = 'snowy'
     for y in range(1, len(level), 2):
         for x in range(1, len(level[y]), 2):
             if level[y][x] == '.':
-                Tile('empty', (x - 1) // 2, (y - 1) // 2)
+                Tile(empty_name, (x - 1) // 2, (y - 1) // 2)
                 if random.randint(1, 10) == 1:
                     Tree('default', (x - 1) // 2, (y - 1) // 2)
             elif level[y][x] == '#':
-                Building('wall', (x - 1) // 2, (y - 1) // 2)
+                Building(biome_modif + 'wall', (x - 1) // 2, (y - 1) // 2)
             elif level[y][x] == 'G':
-                Tile('empty', (x - 1) // 2, (y - 1) // 2)
+                Tile(empty_name, (x - 1) // 2, (y - 1) // 2)
                 green_spawnpoint = ((x - 1) // 2, (y - 1) // 2)
                 player_one = Player(1, green_spawnpoint)
             elif level[y][x] == 'R':
-                Tile('empty', (x - 1) // 2, (y - 1) // 2)
+                Tile(empty_name, (x - 1) // 2, (y - 1) // 2)
                 red_spawnpoint = ((x - 1) // 2, (y - 1) // 2)
                 if PLAYRSCOUNT == 2:
                     red_spawnpoint = ((x - 1) // 2, (y - 1) // 2)
                     player_two = Player(2, red_spawnpoint)
             elif level[y][x] == 'E':
-                Tile('empty', (x - 1) // 2, (y - 1) // 2)
+                Tile(empty_name, (x - 1) // 2, (y - 1) // 2)
                 enemies_spawnpoints.append(((x - 1) // 2, (y - 1) // 2))
             elif level[y][x] == 'V':
-                Tile('ver_rail', (x - 1) // 2, (y - 1) // 2)
+                Tile(biome_modif + 'ver_rail', (x - 1) // 2, (y - 1) // 2)
             elif level[y][x] == 'H':
-                Tile('hor_rail', (x - 1) // 2, (y - 1) // 2)
+                Tile(biome_modif + 'hor_rail', (x - 1) // 2, (y - 1) // 2)
             elif level[y][x] == '2':
-                Tile('ver_rail_be', (x - 1) // 2, (y - 1) // 2)
+                Tile(biome_modif + 'ver_rail_be', (x - 1) // 2, (y - 1) // 2)
             elif level[y][x] == '8':
-                Tile('ver_rail_te', (x - 1) // 2, (y - 1) // 2)
+                Tile(biome_modif + 'ver_rail_te', (x - 1) // 2, (y - 1) // 2)
             elif level[y][x] == '4':
-                Tile('hor_rail_le', (x - 1) // 2, (y - 1) // 2)
+                Tile(biome_modif + 'hor_rail_le', (x - 1) // 2, (y - 1) // 2)
             elif level[y][x] == '6':
-                Tile('hor_rail_re', (x - 1) // 2, (y - 1) // 2)
+                Tile(biome_modif + 'hor_rail_re', (x - 1) // 2, (y - 1) // 2)
             elif level[y][x] == 'W':
-                Tile('ver_rail', (x - 1) // 2, (y - 1) // 2)
+                Tile(biome_modif + 'ver_rail', (x - 1) // 2, (y - 1) // 2)
                 Train('verti', (x - 1) // 2, (y - 1) // 2)
             elif level[y][x] == 'A':
-                Tile('hor_rail', (x - 1) // 2, (y - 1) // 2)
+                Tile(biome_modif + 'hor_rail', (x - 1) // 2, (y - 1) // 2)
                 Train('horiz', (x - 1) // 2, (y - 1) // 2)
             elif level[y][x] == 'T':
-                Tile('empty', (x - 1) // 2, (y - 1) // 2)
+                Tile(empty_name, (x - 1) // 2, (y - 1) // 2)
                 Tree('default', (x - 1) // 2, (y - 1) // 2)
     for y in range(1, len(level), 2):
         for x in range(0, len(level[y]), 2):
@@ -527,9 +531,9 @@ def level_play(level_name='level1.txt'):
     enemy_damageable_group.empty()
     temporary_group.empty()
 
-    level, ENEMIES_LEFT = load_level(level_name)
+    level, ENEMIES_LEFT, biom = load_level(level_name)
     enemies_to_spawn = ENEMIES_LEFT
-    green, red, enemies = generate_level(level)
+    green, red, enemies = generate_level(level, biom)
     enemies = list(map(lambda x: [*x, random.randint(0, 30)], enemies))
     while True:
         for event in pygame.event.get():

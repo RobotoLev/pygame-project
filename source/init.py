@@ -9,7 +9,7 @@ MENUBTTNS = [None for _ in range(4)]
 MODEBTTNS = [None for _ in range(4)]
 STNGBTTNS = [None for _ in range(4)]
 PLAYRSCOUNT = 0
-LEVELS = 4
+LEVELS = 7
 SCORE = 0
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -45,12 +45,22 @@ MAXDIST = 300
 ENEMIES_LEFT = 0
 
 tile_images = {'empty': load_image('grass.png'),
+               'snowy': load_image('snow.png'),
+
                'hor_rail': load_image('horizontal_rails.png'),
                'hor_rail_le': load_image('horizontal_rails_lef_end.png'),
                'hor_rail_re': load_image('horizontal_rails_rig_end.png'),
                'ver_rail': load_image('vertical_rails.png'),
                'ver_rail_te': load_image('vertical_rails_top_end.png'),
-               'ver_rail_be': load_image('vertical_rails_bot_end.png')}
+               'ver_rail_be': load_image('vertical_rails_bot_end.png'),
+
+               'snowy_hor_rail': load_image('snowy_horizontal_rails.png'),
+               'snowy_hor_rail_le': load_image('snowy_horizontal_rails_lef_end.png'),
+               'snowy_hor_rail_re': load_image('snowy_horizontal_rails_rig_end.png'),
+               'snowy_ver_rail': load_image('snowy_vertical_rails.png'),
+               'snowy_ver_rail_te': load_image('snowy_vertical_rails_top_end.png'),
+               'snowy_ver_rail_be': load_image('snowy_vertical_rails_bot_end.png')
+               }
 board_images = {'horiz': [load_image('board_horizontal.png'),
                           load_image('board_horizontal_damaged.png')],
                 'verti': [load_image('board_vertical.png'),
@@ -82,7 +92,8 @@ enemy_images = [None] + \
 #                    'ml': load_image('building_mid-left.png'),
 #                    'center': load_image('building_center.png'),
 #                    'wall': load_image('box.png')}
-building_images = {'wall': load_image('box.png')}
+building_images = {'wall': load_image('box.png'),
+                   'snowy_wall': load_image('snowy_box.png')}
 shot_start_images = [
     [rotate_image(load_image('shot_start_{}.png'.format(i + 1)), 270) for i in range(4)],
     [load_image('shot_start_{}.png'.format(i + 1)) for i in range(4)],
