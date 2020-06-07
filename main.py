@@ -1,7 +1,11 @@
+# Основной файл проекта
+
+
 import random
 from source.init import *
 
 
+# Функция паузы
 def pause(chosed=None, moved=None):
     screen.fill(pygame.Color('black'))
     tile_group.draw(screen)
@@ -11,6 +15,7 @@ def pause(chosed=None, moved=None):
     enemy_damageable_group.draw(screen)
     temporary_group.draw(screen)
     solid_group.draw(screen)
+
     image = pygame.Surface([WIDTH // 3, HEIGHT])
     image.fill(pygame.Color("black"))
     screen.blit(image, (WIDTH // 3, 0))
@@ -36,6 +41,7 @@ def pause(chosed=None, moved=None):
                          text_w + 20 - width // 2, text_h + 20), cr)
 
 
+# Меню настроек
 def settings(chosed=None, moved=None):
     screen.fill((0, 0, 0))
     font = pygame.font.Font(None, 50)
@@ -87,6 +93,7 @@ def settings(chosed=None, moved=None):
                           text_w + 20, text_h + 20)), cr)
 
 
+# Выбор режима игры
 def choose_mode(chosed=None, moved=None):
     screen.fill((0, 0, 0))
     font = pygame.font.Font(None, 50)
@@ -121,6 +128,7 @@ def choose_mode(chosed=None, moved=None):
                          text_w + 20 - width // 2, text_h + 20), cr)
 
 
+# Главное меню
 def main_menu(pressed=None, moved=None):
     screen.fill((0, 0, 0))
     font = pygame.font.Font(None, 50)
@@ -145,6 +153,7 @@ def main_menu(pressed=None, moved=None):
                          text_w + 20 - width // 2, text_h + 20), cr)
 
 
+# Функция возвращает, какая из кнопок на экране нажата
 def what_is_pressed(buttons, pos):
     x, y = pos
     for it, i in enumerate(buttons):
@@ -152,6 +161,7 @@ def what_is_pressed(buttons, pos):
             return it
 
 
+# Стартовый экран
 def start_screen():
     main_menu()
     in_menu = True
@@ -197,6 +207,7 @@ def start_screen():
     flag()
 
 
+# Экран паузы
 def pause_screen():
     pause()
     in_menu = True
@@ -242,6 +253,7 @@ def pause_screen():
         clock.tick(FPS)
 
 
+# Экран настроек
 def settings_screen(on_pause=False):
     flag = None
     global VOLUME
@@ -310,13 +322,12 @@ def settings_screen(on_pause=False):
     flag()
 
 
+# Функция продолжения игры
 def continue_screen():
     global PLAYRSCOUNT, SCORE
     try:
         with open('data/cont.txt', 'r') as f:
             level, players, score = map(int, f.read().split())
-        if 0 > level > LEVELS or players not in (1, 2):
-            1 / 0
         PLAYRSCOUNT = players
         SCORE = score
         game(level, True)
@@ -324,6 +335,7 @@ def continue_screen():
         start_screen()
 
 
+# Функция отображения переходного экрана между уровнями
 def new_level_screen(level):
     time = 60
     flags = []
@@ -366,6 +378,7 @@ def new_level_screen(level):
         clock.tick(FPS)
 
 
+# Функция показа итогового счета
 def look_at_score():
     flags = []
     while True:
@@ -401,6 +414,7 @@ def look_at_score():
         clock.tick(FPS)
 
 
+# Функция выбора режима игры
 def choose_mode_screen():
     choose_mode()
     flag = None
@@ -455,6 +469,7 @@ def choose_mode_screen():
     flag()
 
 
+# Функция генерации уровня
 def generate_level(level, biom):
     global player_one, player_two, green_spawnpoint, red_spawnpoint
     green_spawnpoint, red_spawnpoint = None, None  # Точки появления для игроков
@@ -517,6 +532,7 @@ def generate_level(level, biom):
     return green_spawnpoint, red_spawnpoint, enemies_spawnpoints
 
 
+# Функция игры на уровне
 def level_play(level_name='level1.txt'):
     global ENEMIES_LEFT, LOCAL_SCORE
     print('Game has been started')
@@ -621,6 +637,7 @@ def level_play(level_name='level1.txt'):
     res()
 
 
+# Функция запуска игры
 def game(start_level=0, load=None):
     global SCORE
     level = start_level
@@ -641,6 +658,7 @@ def game(start_level=0, load=None):
     start_screen()
 
 
+# Класс одной клетки игрового поля
 class Tile(pygame.sprite.Sprite):
     def __init__(self, tile_type, pos_x, pos_y):
         super().__init__(tile_group, all_sprites)
@@ -648,6 +666,7 @@ class Tile(pygame.sprite.Sprite):
         self.rect = self.image.get_rect().move(tile_width * pos_x, tile_height * pos_y)
 
 
+# Базовый класс объекта игрового поля
 class Object(pygame.sprite.Sprite):
     def __init__(self, *groups):
         super().__init__(list(groups) + [object_group])
@@ -660,12 +679,14 @@ class Object(pygame.sprite.Sprite):
 
         self.is_update_images = True
 
+    # Функция нанесения урона
     def damage(self, damage_level, shot=False):
         self.strength -= damage_level
         if shot and self.fireable:
             self.is_fired = True
             self.fire_damage = 1
 
+    # Функция обновления
     def update(self):
         global ENEMIES_LEFT
         if self.strength <= 0:
@@ -684,6 +705,8 @@ class Object(pygame.sprite.Sprite):
                 self.fire_damage += 1
 
 
+# Класс постройки
+# Постройка - объект с бесконечным запасом прочности
 class Building(Object):
     def __init__(self, tile_type, pos_x, pos_y):
         super().__init__(solid_group, all_sprites)
@@ -692,6 +715,7 @@ class Building(Object):
         self.rect = self.image.get_rect().move(tile_width * pos_x, tile_height * pos_y)
 
 
+# Класс ограждения
 class Boarding(Object):
     def __init__(self, board_type, pos_x, pos_y):
         super().__init__(player_damageable_group, enemy_damageable_group, all_sprites)
@@ -705,6 +729,7 @@ class Boarding(Object):
                                                tile_height * pos_y - board_height)
 
 
+# Класс вагона
 class Train(Object):
     def __init__(self, train_type, pos_x, pos_y):
         super().__init__(player_damageable_group, enemy_damageable_group, all_sprites)
@@ -719,6 +744,8 @@ class Train(Object):
                                                tile_height * pos_y + board_height)
 
 
+# Класс дерева
+# Если выстрелить в дерево - оно загорится и будет гореть, пока не сгорит полностью
 class Tree(Object):
     def __init__(self, tree_type, pos_x, pos_y):
         super().__init__(player_damageable_group, enemy_damageable_group, all_sprites)
@@ -735,6 +762,7 @@ class Tree(Object):
                                                tile_height * pos_y + board_height)
 
 
+# Класс игрока
 class Player(Object):
     def __init__(self, num, spawnpoint, level=1):
         global ENEMIES_LEFT
@@ -844,6 +872,7 @@ class Player(Object):
         super().kill()
 
 
+# Класс врага
 class Enemy(Object):
     def __init__(self, pos_x, pos_y, player, level=1):
         super().__init__(enemy_group, player_damageable_group, all_sprites)
@@ -949,6 +978,7 @@ class Enemy(Object):
             self.shoot_delay = random.randint(30, 120)
 
 
+# Анимированный спрайт
 class AnimatedSprite(pygame.sprite.Sprite):
     def __init__(self, *groups):
         super().__init__(list(groups))
@@ -981,6 +1011,7 @@ class AnimatedSprite(pygame.sprite.Sprite):
             self.lifetime -= 1
 
 
+# Анимация начала выстрела (возле пушки танка)
 class ShotStart(AnimatedSprite):
     def __init__(self, pos_x, pos_y, angle):
         super().__init__(all_sprites)
@@ -991,6 +1022,7 @@ class ShotStart(AnimatedSprite):
         self.lifetime = 1
 
 
+# Анимация конца выстрела (там, куда попал "снаряд")
 class ShotEnd(AnimatedSprite):
     def __init__(self, pos_x, pos_y, angle, res, level, is_player, obj):
         super().__init__(all_sprites)
@@ -1027,6 +1059,11 @@ class ShotEnd(AnimatedSprite):
         super().kill()
 
 
+# Класс выстрела
+#
+# Выстрел - невидимый спрайт, который движется с какой-то скоростью
+# Когда выстрел с кем-то (или с чем-то) сталкивается, у этого объекта уменьшается прочность
+# В начале и в конце выстрела проигрываются анимации выстрела/попадания соответственно
 class Shot(pygame.sprite.Sprite):
     def __init__(self, obj):
         super().__init__(all_sprites, temporary_group)
@@ -1097,10 +1134,13 @@ class Shot(pygame.sprite.Sprite):
         self.kill()
 
 
+# Сколько прочности снимает выстрел игрока по объекту
 PLAYER_SHOT_XP = {Boarding: 100, Tree: 100, Train: 200, Enemy: 300}
+# Сколько очков дается игроку за врага определенного уровня
 PLAYER_SCORE_ENEMIES = {1: 500, 2: 1200, 3: 2500}
 
+# Запуск игры
 start_screen()
-# PLAYRSCOUNT = 2
-# game()
+
+# Завершение работы
 pygame.quit()
