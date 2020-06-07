@@ -5,7 +5,7 @@ import random
 from source.init import *
 
 
-# Функция паузы
+# Создание экрана паузы
 def pause(chosed=None, moved=None):
     screen.fill(pygame.Color('black'))
     tile_group.draw(screen)
@@ -21,7 +21,7 @@ def pause(chosed=None, moved=None):
     screen.blit(image, (WIDTH // 3, 0))
     font = pygame.font.Font(None, 50)
     texts = ["Продолжить", "Настройки", "Выйти в меню", "Выход"]
-    for i in range(4):
+    for i in range(4):  # Создание кнопок
         width = 1
         cr = (100, 255, 100)
         if i == chosed:
@@ -41,7 +41,7 @@ def pause(chosed=None, moved=None):
                          text_w + 20 - width // 2, text_h + 20), cr)
 
 
-# Меню настроек
+# Создание экрана настроек
 def settings(chosed=None, moved=None):
     screen.fill((0, 0, 0))
     font = pygame.font.Font(None, 50)
@@ -93,12 +93,12 @@ def settings(chosed=None, moved=None):
                           text_w + 20, text_h + 20)), cr)
 
 
-# Выбор режима игры
+# Создание экрана выбора режима игры
 def choose_mode(chosed=None, moved=None):
     screen.fill((0, 0, 0))
     font = pygame.font.Font(None, 50)
     texts = ['1 игрок', '2 игрока', 'СТАРТ', 'НАЗАД']
-    for i in range(4):
+    for i in range(4):  # Создание кнопок
         cr = (100, 255, 100)
         width = 1
         if chosed == i:
@@ -128,7 +128,7 @@ def choose_mode(chosed=None, moved=None):
                          text_w + 20 - width // 2, text_h + 20), cr)
 
 
-# Главное меню
+# Создание экрана главного меню
 def main_menu(pressed=None, moved=None):
     screen.fill((0, 0, 0))
     font = pygame.font.Font(None, 50)
@@ -153,7 +153,7 @@ def main_menu(pressed=None, moved=None):
                          text_w + 20 - width // 2, text_h + 20), cr)
 
 
-# Функция возвращает, какая из кнопок на экране нажата
+# Функция, указывающая, на какой из кнопок сейчас мышь
 def what_is_pressed(buttons, pos):
     x, y = pos
     for it, i in enumerate(buttons):
@@ -161,7 +161,7 @@ def what_is_pressed(buttons, pos):
             return it
 
 
-# Стартовый экран
+# Обработчик главного меню
 def start_screen():
     main_menu()
     in_menu = True
@@ -207,7 +207,7 @@ def start_screen():
     flag()
 
 
-# Экран паузы
+# Обработчик экрана паузы
 def pause_screen():
     pause()
     in_menu = True
@@ -253,7 +253,7 @@ def pause_screen():
         clock.tick(FPS)
 
 
-# Экран настроек
+# Обработчик экрана настроек
 def settings_screen(on_pause=False):
     flag = None
     global VOLUME
@@ -322,20 +322,22 @@ def settings_screen(on_pause=False):
     flag()
 
 
-# Функция продолжения игры
+# Загрузка игры с файла (при нажатии "Продолжить" в главном меню)
 def continue_screen():
     global PLAYRSCOUNT, SCORE
     try:
         with open('data/cont.txt', 'r') as f:
             level, players, score = map(int, f.read().split())
+        if 0 > level > LEVELS or players not in (1, 2):
+            raise ValueError
         PLAYRSCOUNT = players
         SCORE = score
         game(level, True)
-    except Exception as _:
+    except ValueError:  # Если битый файл загрузки или какие-то ещё беды
         start_screen()
 
 
-# Функция отображения переходного экрана между уровнями
+# Создание и обработка экрана перехода между уровнями
 def new_level_screen(level):
     time = 60
     flags = []
@@ -378,7 +380,7 @@ def new_level_screen(level):
         clock.tick(FPS)
 
 
-# Функция показа итогового счета
+# Создание и обработка финального экрана(после прохождения всех уровней)
 def look_at_score():
     flags = []
     while True:
@@ -414,14 +416,14 @@ def look_at_score():
         clock.tick(FPS)
 
 
-# Функция выбора режима игры
+# Обработка экрана выбора режима игры
 def choose_mode_screen():
     choose_mode()
     flag = None
     btn = None
     global PLAYRSCOUNT
     choosing = True
-    while True:
+    while True:  # Оно работает, это главное
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
@@ -469,17 +471,17 @@ def choose_mode_screen():
     flag()
 
 
-# Функция генерации уровня
+# Функция создания уровня на экране
 def generate_level(level, biom):
     global player_one, player_two, green_spawnpoint, red_spawnpoint
     green_spawnpoint, red_spawnpoint = None, None  # Точки появления для игроков
     enemies_spawnpoints = []  # список с точками появления проивников
     empty_name = 'empty'
     biome_modif = ''
-    if biom == 'snowy':
+    if biom == 'snowy':  # Поддержка биомов, указываемых в файле с уровнем
         biome_modif = 'snowy_'
         empty_name = 'snowy'
-    for y in range(1, len(level), 2):
+    for y in range(1, len(level), 2):  # Создание всех объектов, что не заборчики
         for x in range(1, len(level[y]), 2):
             if level[y][x] == '.':
                 Tile(empty_name, (x - 1) // 2, (y - 1) // 2)
@@ -521,18 +523,18 @@ def generate_level(level, biom):
             elif level[y][x] == 'T':
                 Tile(empty_name, (x - 1) // 2, (y - 1) // 2)
                 Tree('default', (x - 1) // 2, (y - 1) // 2)
-    for y in range(1, len(level), 2):
+    for y in range(1, len(level), 2):  # Обработка вертикальных заборчиков
         for x in range(0, len(level[y]), 2):
             if level[y][x] == 'V':
                 Boarding('verti', x // 2, (y - 1) // 2)
-    for y in range(0, len(level), 2):
+    for y in range(0, len(level), 2):  # Обработка горизонтальных заборчиков(жаль, что они только 1 типа)
         for x in range(1, len(level[y]), 2):
             if level[y][x] == 'H':
                 Boarding('horiz', (x - 1) // 2, y // 2)
-    return green_spawnpoint, red_spawnpoint, enemies_spawnpoints
+    return green_spawnpoint, red_spawnpoint, enemies_spawnpoints  # возвращаем точки появления всех танков
 
 
-# Функция игры на уровне
+# Функция обработки игрового процесса с заданным уровнем
 def level_play(level_name='level1.txt'):
     global ENEMIES_LEFT, LOCAL_SCORE
     print('Game has been started')
@@ -620,7 +622,7 @@ def level_play(level_name='level1.txt'):
 
         all_sprites.update()
         clock.tick(FPS)
-
+        # Тут у нас счёт вырисовывается. Криво, но рисуется
         font = pygame.font.Font(None, 50)
         cr = (0, 200, 0)
         text = font.render(str(LOCAL_SCORE + SCORE), 1, cr)
@@ -634,7 +636,7 @@ def level_play(level_name='level1.txt'):
 
         pygame.display.flip()
 
-    res()
+    res()  # Оно нужно. Просто знайте это
 
 
 # Функция запуска игры
@@ -654,8 +656,8 @@ def game(start_level=0, load=None):
         SCORE += result
         print(level)
 
-    look_at_score()
-    start_screen()
+    look_at_score()  # Просмотр счёта после игры
+    start_screen()  # Поиграли и в меню
 
 
 # Класс одной клетки игрового поля

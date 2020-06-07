@@ -3,11 +3,13 @@ import os
 import pygame
 
 
+# Ну тут очевидно
 def terminate():
     pygame.quit()
     sys.exit()
 
 
+# Загружаем картинки из файлов
 def load_image(name, colorkey=None):
     fullname = os.path.join('data', 'Textures', name)
 
@@ -28,6 +30,7 @@ def load_image(name, colorkey=None):
     return image
 
 
+# Просто поворачиваем картинки
 def rotate_image(image, angle):
     angle = (360 - angle) % 360
     rot_image = pygame.transform.rotate(image, angle)
@@ -37,6 +40,7 @@ def rotate_image(image, angle):
     return rot_image
 
 
+# Просто поворачиваем картинки
 def get_rotated_images(filename, angle):
     image = load_image(filename)
     res = []
@@ -46,6 +50,7 @@ def get_rotated_images(filename, angle):
     return res
 
 
+# Берём всю важную информацию о уровне из файла
 def load_level(filename):
     filename = "data/levels/" + filename
     # читаем уровень, убирая символы перевода строки

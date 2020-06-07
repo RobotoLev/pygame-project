@@ -43,6 +43,7 @@ SHOT_VELOCITY = 5
 MAXDIST = 300
 ENEMIES_LEFT = 0
 
+# Все полноценные части уровня
 tile_images = {'empty': load_image('grass.png'),
                'snowy': load_image('snow.png'),
 
@@ -60,18 +61,22 @@ tile_images = {'empty': load_image('grass.png'),
                'snowy_ver_rail_te': load_image('snowy_vertical_rails_top_end.png'),
                'snowy_ver_rail_be': load_image('snowy_vertical_rails_bot_end.png')
                }
+# Заборчики
 board_images = {'horiz': [load_image('board_horizontal.png'),
                           load_image('board_horizontal_damaged.png')],
                 'verti': [load_image('board_vertical.png'),
                           load_image('board_vertical_damaged.png')]}
+# Поезда, поезда
 train_images = {'horiz': [load_image('horizontal_train.png'),
                           load_image('horizontal_train_damaged.png')],
                 'verti': [load_image('vertical_train.png'),
                           load_image('vertical_train_damaged.png')]}
+# Дерево, которое "красиво" горит
 tree_images = {'default': [load_image('trees\\tree_default_0.png'),
                            load_image('trees\\tree_default_1.png'),
                            load_image('trees\\tree_default_2.png'),
                            load_image('trees\\tree_default_3.png')]}
+# Танчики
 player_one_images = [None] +\
                     [get_rotated_images('tanks\\source_tanks\\tank_green_mk{}.png'.format(i), 180)
                      for i in range(1, 4)]
@@ -81,18 +86,22 @@ player_two_images = [None] +\
 enemy_images = [None] + \
                [get_rotated_images('tanks\\source_tanks\\tank_enemy_mk{}.png'.format(i), 0)
                 for i in range(1, 4)]
+# Коробки, которые камни, которые выполняют функцию стен
 building_images = {'wall': load_image('box.png'),
                    'snowy_wall': load_image('snowy_box.png')}
+# Части анимации начала выстрела
 shot_start_images = [
     [rotate_image(load_image('shot_start_{}.png'.format(i + 1)), 270) for i in range(4)],
     [load_image('shot_start_{}.png'.format(i + 1)) for i in range(4)],
     [rotate_image(load_image('shot_start_{}.png'.format(i + 1)), 90) for i in range(4)],
     [rotate_image(load_image('shot_start_{}.png'.format(i + 1)), 180) for i in range(4)]]
+# Части анимации конца выстрела
 shot_end_images = [
     [rotate_image(load_image('shot_end_{}.png'.format(i + 1)), 270) for i in range(4)],
     [load_image('shot_end_{}.png'.format(i + 1)) for i in range(4)],
     [rotate_image(load_image('shot_end_{}.png'.format(i + 1)), 90) for i in range(4)],
     [rotate_image(load_image('shot_end_{}.png'.format(i + 1)), 180) for i in range(4)]]
+# ...
 null_image = load_image("null.png")
 
 all_sprites = pygame.sprite.Group()
