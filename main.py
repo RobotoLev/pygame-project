@@ -546,7 +546,8 @@ def level_play(level_name='level1.txt'):
                     print(res)
                     if res == start_screen:
                         with open('data/cont.txt', 'w') as f:
-                            f.write(f'{int(level_name.split(".")[0].split("evel")[1]) - 1} {PLAYRSCOUNT} {SCORE}')
+                            f.write(f'{int(level_name.split(".")[0].split("evel")[1]) - 1} '
+                                    f'{PLAYRSCOUNT} {SCORE}')
                     if res is not None:
                         in_game = False
                         break

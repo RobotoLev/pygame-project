@@ -1,4 +1,3 @@
-# import pygame
 from source.system_functions import *
 
 FPS = 30
@@ -82,16 +81,6 @@ player_two_images = [None] +\
 enemy_images = [None] + \
                [get_rotated_images('tanks\\source_tanks\\tank_enemy_mk{}.png'.format(i), 0)
                 for i in range(1, 4)]
-# building_images = {'rt': load_image('building_right-top.png'),
-#                    'lt': load_image('building_left-top.png'),
-#                    'rb': load_image('building_right-bot.png'),
-#                    'lb': load_image('building_left-bot.png'),
-#                    'mt': load_image('building_mid-top.png'),
-#                    'mr': load_image('building_mid-right.png'),
-#                    'mb': load_image('building_mid-bot.png'),
-#                    'ml': load_image('building_mid-left.png'),
-#                    'center': load_image('building_center.png'),
-#                    'wall': load_image('box.png')}
 building_images = {'wall': load_image('box.png'),
                    'snowy_wall': load_image('snowy_box.png')}
 shot_start_images = [
