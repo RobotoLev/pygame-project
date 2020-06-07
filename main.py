@@ -707,8 +707,7 @@ class Object(pygame.sprite.Sprite):
                 self.fire_damage += 1
 
 
-# Класс постройки
-# Постройка - объект с бесконечным запасом прочности
+# Класс объекта с бесконечным запасом прочности (Building, т.к. изначально это были постройки)
 class Building(Object):
     def __init__(self, tile_type, pos_x, pos_y):
         super().__init__(solid_group, all_sprites)

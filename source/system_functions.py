@@ -1,9 +1,12 @@
+# В этом файле находятся некоторые специальные функции
+
+
 import sys
 import os
 import pygame
 
 
-# Ну тут очевидно
+# Функция экстренного завершения работы
 def terminate():
     pygame.quit()
     sys.exit()
@@ -30,7 +33,7 @@ def load_image(name, colorkey=None):
     return image
 
 
-# Просто поворачиваем картинки
+# Функция поворота картинки
 def rotate_image(image, angle):
     angle = (360 - angle) % 360
     rot_image = pygame.transform.rotate(image, angle)
@@ -40,7 +43,7 @@ def rotate_image(image, angle):
     return rot_image
 
 
-# Просто поворачиваем картинки
+# Функция для получения набора из четырех различно повернутых версий одной картинки
 def get_rotated_images(filename, angle):
     image = load_image(filename)
     res = []
